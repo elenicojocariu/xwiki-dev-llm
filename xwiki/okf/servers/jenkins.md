@@ -63,6 +63,27 @@ the entry that actually has those keys rather than indexing by position.
 `grep` it for the specific thing being checked, and keep the pattern narrow (a broad pattern matched
 against Testcontainers' image dumps produces megabytes of noise).
 
+## The two functional-test jobs
+
+Platform's functional tests run in **two** jobs, against different environments, and a release is
+gated on both:
+
+| Job | Runs |
+|---|---|
+| `job/XWiki/job/<repo>/job/<branch>` | the main build of each repo of the release train (Commons, Rendering, Platform) — one environment, HSQLDB |
+| `job/XWiki%20Environment%20Tests/job/xwiki-platform/job/<branch>` | Platform only, a matrix of ~4 environments (MySQL / MariaDB / PostgreSQL / Oracle, each with its own servlet engine, store and browser) |
+
+Consequences when reading their `testReport`:
+
+- **A test can be green in one job purely because it never ran there.** Tests guarded by
+  `assumeTrue` (a database-specific one, say) report `SKIPPED` in the environments that do not match,
+  so a `PASSED`/absent result is not evidence of health — count the environments that actually ran it.
+- **Environment Tests reports every test once per environment**, so a single broken test appears N
+  times. Deduplicate on `className` + `name`, and take the environment from the *suite's*
+  `enclosingBlockNames` (its last entry, up to `" - Docker tests"`) — it appears nowhere else.
+- **`initializationError` and `executionError` are not test methods.** They are a whole class failing
+  to set up, or the build's forbidden-log-content assertion. They hide every test of that module.
+
 ## Traps when interpreting a build
 
 - **`result` distinguishes *how* it broke.** `UNSTABLE` = the build ran and **tests failed**;
@@ -107,3 +128,5 @@ match. See [[versioning]] for why the version itself must always be read, never 
 - A test that fails intermittently rather than deterministically is a flicker: Jenkins only shows
   the one run, so take its history across builds from the `develocity` MCP, then use the
   `xwiki-fix-flickering-docker-test` skill.
+- To triage a whole branch's failures at once — flickers vs. real breakages, before a release — use
+  the `xwiki-release-test-triage` skill, which automates the correlation described above.
