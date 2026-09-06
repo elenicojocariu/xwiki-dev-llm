@@ -197,12 +197,14 @@ Applied by `xwiki-fix-sonarqube-issue`, which owns the *procedure*.
   sourced).
 - **jira** — accessing jira.xwiki.org (jira-cli or REST), the before/after images a visibly changing
   fix owes its issue whether or not it has a PR, the durable issue-field conventions
-  (Component, Affects Version = oldest affected/else last LTS, Fix Version); values are volatile;
+  (Component, Affects Version = oldest affected/else last LTS, Fix Version, and the `flickering`
+  label + "Flickering Test" field that let a CI failure be joined to its issue); values are volatile;
   resolving/closing (Fixed vs. Cannot Reproduce for already-covered issues, assign to yourself);
   attachments (REST-only, and the attachment URL is how an image reaches a GitHub PR body); and
   wiki-markup gotchas (wrap literals in `{{…}}`, don't over-escape prose, never escape inside `{code}`).
 - **jenkins** — querying ci.xwiki.org through the Jenkins REST API (`/api/json?tree=…`, anonymous
-  read) instead of scraping the UI: the multibranch URL shape, the endpoints for builds / failing
+  read) instead of scraping the UI: the multibranch URL shape, the two functional-test jobs and the
+  environment matrix behind them, the endpoints for builds / failing
   tests / changesets / built SHA / artifacts / `consoleText`, and the **Cloudflare trap where a
   spoofed browser User-Agent gets a 403 while plain `curl` gets 200**. Plus the traps in reading a
   result: `FAILURE` (broke outside the tests) vs `UNSTABLE` (tests failed), why a test case's
@@ -234,7 +236,8 @@ each grounded in a cited source. `_template.md` holds the format and the groundi
 `xwiki-convert-tests-docker`, `xwiki-fix-flickering-docker-test`, `xwiki-increase-test-coverage`,
 `xwiki-legacy`, `xwiki-deploy-extension`, `xwiki-rest-api`, `xwiki-xar-pages`, `xwiki-doc-writing`, `xwiki-doc-convert`, `xwiki-translations`,
 `xwiki-contrib-release-blog-post`, `xwiki-fix-sonarqube-issue`, `xwiki-backport`,
-`xwiki-backport-testneeded`, `xwiki-jira`, `xwiki-openproject`, `xwiki-review`.
+`xwiki-backport-testneeded`, `xwiki-jira`, `xwiki-openproject`, `xwiki-release-test-triage`,
+`xwiki-review`.
 
 ## How to extend the OKF (EXTEND)
 

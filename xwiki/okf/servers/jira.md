@@ -53,6 +53,16 @@ correct. Check what the project actually exposes before insisting on a field.
 Write the **description in JIRA wiki markup** (`h2.`, `{{monospace}}`, `*bold*`, `* bullet`) and make
 it explain the **user-visible problem**, not just the code change — but mind the markup gotchas below.
 
+## Flickering tests
+
+A test that fails intermittently gets its own issue, and two things make it findable later:
+
+- the **`flickering` label**, which is what the "Flickering tests" filter
+  (https://jira.xwiki.org/issues/?filter=14240, linked from every Release Plan) selects; and
+- the **"Flickering Test" field** (`customfield_10870`), holding the fully-qualified test as
+  `org.xwiki.search.test.ui.AllIT$NestedSolrSearchIT#searchExclusions` — the exact form CI reports,
+  so tooling can join a CI failure to its issue instead of guessing from the summary. Fill it in.
+
 ## Resolving / closing an issue
 
 Choose the **resolution** that matches reality and **assign the issue to yourself** as you close it
