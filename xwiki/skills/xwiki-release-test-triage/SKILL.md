@@ -20,8 +20,8 @@ node <skill>/tools/triage.mjs --branch stable-17.10.x --repos xwiki-platform --c
 ```
 
 It reads the main Jenkins job of each repo of the release train plus platform's Environment Tests
-job, aggregates each test across every job and environment, and joins the failures with the open
-flickering issues. `--json` gives the same data unformatted. Derive the `--compare` branches from
+job, aggregates each test across every job, environment and recent build, and joins the failures
+with the open flickering issues. `--json` gives the same data unformatted. Derive the `--compare` branches from
 the maintained-branch policy in [[release]] plus `git branch -r 'origin/stable-*'` — the policy says
 where a fix must *land*, the remote list says where it can be *observed*.
 
@@ -33,22 +33,32 @@ move on. This is the single most common way this triage goes wrong.
 
 ## 3. Read the verdicts
 
-`Failed/ran envs` counts *environments*, not test cases, and drives the verdict:
+Two independent measurements decide, and neither is the JIRA column:
 
-- **systematic** — failed in every environment that ran it. Genuinely broken; needs an owner.
-- **intermittent** — failed in some. A flicker.
-- **single env** — only one environment ran it, which cannot tell the two apart. Resolve it with the
-  `develocity` MCP, which holds the test's history across builds.
+- **`Failed/ran envs`** — environments, not test cases, in the latest build. Failing all of them is
+  a breakage; failing some is a flicker.
+- **`Failed/ran builds`** — the same test over the last few builds (`--history`, default 5 per job).
+  One build is one sample: this is what separates "flickered once" from "has failed every build for
+  a fortnight", which look identical in a single report.
+
+`systematic` means one of the two says always; `intermittent` means both say sometimes; `single env`
+means only one environment ran it *and* it has not failed every recent build — the one case the data
+cannot settle, so get the test's history from the `develocity` MCP.
 
 `(+N skipped)` means `assumeTrue` disabled the test elsewhere — a test that runs in one environment
 only is invisible in the other job, so "green on the main job" is not evidence it passes.
 
-Then, per row:
+**The evidence outranks the issue.** A `JIRA` key means someone once saw this test flicker, not that
+today's failure is that flicker:
 
-- **Known flicker** (an issue key) — understood, does not block. Nothing to do.
-- **Intermittent, no issue** — an unknown flicker: it needs an issue before the release, so that the
-  next triage recognises it. Propose one; see the flickering-issue fields in [[jira]].
-- **Systematic** — a real breakage. Go to step 4.
+- **Intermittent + open issue** — understood, does not block. Check the rate anyway: a flicker that
+  now fails most builds is worth raising even though it is tracked.
+- **Systematic + open issue** — the issue no longer describes the test, whatever it is labelled.
+  Triage it as a breakage (step 4) and say the issue needs re-scoping; `**STALE**` marks the
+  clear-cut case, where it also fails every recent build.
+- **Intermittent, no issue** — an unknown flicker: it needs an issue before the release, so the next
+  triage recognises it. Propose one; see the flickering-issue fields in [[jira]].
+- **Systematic, no issue** — a real breakage. Go to step 4.
 
 Entries under "Not test methods" are a module's whole setup failing, or forbidden content in the
 logs. They hide every test of that module, so treat one as more serious than a single failure.

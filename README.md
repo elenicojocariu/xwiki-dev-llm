@@ -171,7 +171,7 @@ ln -s "$XWIKI_LLM_HOME/xwiki/opencode/plugins/xwiki-line-endings.js" ~/.config/o
   - `xwiki-increase-test-coverage` — raise and lock in a module's unit-test coverage (JaCoCo instruction ratio).
   - `xwiki-legacy` — move a deprecated public API out of a main module into its `-legacy` companion (migrate callers, remove, re-add via a plain class or an AspectJ aspect, Revapi ignore).
   - `xwiki-fix-flickering-docker-test` — fix a flickering Docker-based functional test.
-  - `xwiki-release-test-triage` — before a release, triage a branch's failing tests on ci.xwiki.org: known flickers vs. unknown ones vs. real breakages, and whether each breakage is already fixed on another branch.
+  - `xwiki-release-test-triage` — before a release, triage a branch's failing tests on ci.xwiki.org: rated across environments and recent builds, known flickers vs. unknown ones vs. real breakages, and whether each breakage is already fixed on another branch.
   - `xwiki-deploy-extension` — deploy a XAR/JAR extension to a running XWiki instance.
   - `xwiki-rest-api` — read/write a running XWiki over REST: get page content & xobjects, update pages & object properties, create pages (with xobjects), Solr search.
   - `xwiki-xar-pages` — edit extension wiki pages (XAR XML): the `xar:format` / `xar:verify` conventions.

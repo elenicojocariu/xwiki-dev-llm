@@ -20,19 +20,21 @@ const USAGE = `Usage: node triage.mjs --branch <branch> [options]
   --repos <a,b,c>    Repos to check (default: xwiki-commons,xwiki-rendering,xwiki-platform)
   --compare <a,b,c>  Also report how each failing test fares on these branches
   --max <n>          Cap the reported failures (default 40)
+  --history <n>      Builds of history to rate each failure over (default 5, 0 to skip)
   --json             Emit JSON instead of the Markdown report
 
 Run it from inside a clone of the repo to also get how far the branch has moved since the build.
 `;
 
 function parseArgs(argv) {
-  const out = { repos: ['xwiki-commons', 'xwiki-rendering', 'xwiki-platform'], compare: [], max: 40 };
+  const out = { repos: ['xwiki-commons', 'xwiki-rendering', 'xwiki-platform'], compare: [], max: 40, history: 5 };
   for (let i = 0; i < argv.length; i++) {
     const key = argv[i];
     if (key === '--branch') out.branch = argv[++i];
     else if (key === '--repos') out.repos = argv[++i].split(',').filter(Boolean);
     else if (key === '--compare') out.compare = argv[++i].split(',').filter(Boolean);
     else if (key === '--max') out.max = Number(argv[++i]);
+    else if (key === '--history') out.history = Number(argv[++i]);
     else if (key === '--json') out.json = true;
     else { console.error(`Unknown argument [${key}]\n\n${USAGE}`); process.exit(2); }
   }
@@ -69,14 +71,31 @@ function jobs(repos, branch) {
   return list;
 }
 
-/** Most recent build that produced test results: ABORTED builds and FAILURE-before-tests report none. */
-async function lastTestedBuild(jobUrl) {
+/** The last `count` builds that produced test results, newest first: ABORTED builds report none. */
+async function testedBuilds(jobUrl, count) {
   const data = await getJSON(`${jobUrl}/api/json?tree=${tree('builds[number,result,actions[failCount,totalCount]]')}`);
-  for (const build of (data?.builds || []).slice(0, 10)) {
+  const builds = [];
+  for (const build of data?.builds || []) {
     const junit = (build.actions || []).find(action => action && action.totalCount != null);
-    if (junit) return { number: build.number, result: build.result, ...junit };
+    if (junit) builds.push({ number: build.number, result: build.result, ...junit });
+    if (builds.length === count) break;
   }
-  return null;
+  return builds;
+}
+
+/** Which tests ran, and which of them failed, in one build. Cheaper than the full report. */
+async function outcomes(buildUrl) {
+  const data = await getJSON(`${buildUrl}/testReport/api/json?tree=${tree('suites[cases[className,name,status]]')}`);
+  const ran = new Set();
+  const failed = new Set();
+  for (const suite of data?.suites || []) {
+    for (const testCase of suite.cases || []) {
+      const id = idOf(testCase.className, testCase.name);
+      if (testCase.status !== 'SKIPPED') ran.add(id);
+      if (testCase.status === 'FAILED' || testCase.status === 'REGRESSION') failed.add(id);
+    }
+  }
+  return { ran, failed };
 }
 
 /** The environment of a suite, e.g. "MariaDB latest, Jetty 12-jdk25, S3, Firefox". */
@@ -154,25 +173,37 @@ async function knownFlickers() {
 }
 
 /** @returns {Map} test id -> one row aggregating every job and environment of the branch. */
-async function collect(branch, repos) {
+async function collect(branch, repos, history = 0) {
   const builds = [];
   const tests = new Map();
+  const row = id => {
+    if (!tests.has(id)) {
+      tests.set(id, {
+        id, jobs: new Set(), failed: new Set(), ran: new Set(), skipped: new Set(), detail: '',
+        seenIn: 0, failedIn: 0
+      });
+    }
+    return tests.get(id);
+  };
   for (const job of jobs(repos, branch)) {
-    const build = await lastTestedBuild(job.url);
+    const [build, ...older] = await testedBuilds(job.url, Math.max(1, history));
     if (!build) { builds.push({ ...job, build: null }); continue; }
     const buildUrl = `${job.url}/${build.number}`;
-    builds.push({ ...job, build, rev: await revision(buildUrl, branch) });
+    builds.push({ ...job, build, history: older.length + 1, rev: await revision(buildUrl, branch) });
     for (const test of (await testResults(buildUrl)).values()) {
-      if (!tests.has(test.id)) {
-        tests.set(test.id, { id: test.id, jobs: new Set(), failed: new Set(), ran: new Set(), skipped: new Set(), detail: '' });
-      }
-      const row = tests.get(test.id);
+      const target = row(test.id);
       // Environments are namespaced by job so that the two jobs' "default" ones stay distinct.
-      for (const env of test.failed) row.failed.add(`${job.label}/${env}`);
-      for (const env of test.ran) row.ran.add(`${job.label}/${env}`);
-      for (const env of test.skipped) row.skipped.add(`${job.label}/${env}`);
-      if (test.failed.size) row.jobs.add(job.label);
-      if (test.detail && !row.detail) row.detail = test.detail;
+      for (const env of test.failed) target.failed.add(`${job.label}/${env}`);
+      for (const env of test.ran) target.ran.add(`${job.label}/${env}`);
+      for (const env of test.skipped) target.skipped.add(`${job.label}/${env}`);
+      if (test.failed.size) target.jobs.add(job.label);
+      if (test.detail && !target.detail) target.detail = test.detail;
+      if (test.ran.size) { target.seenIn++; if (test.failed.size) target.failedIn++; }
+    }
+    // One build is one sample: a rate over several is what separates a flicker from a breakage.
+    for (const build of older) {
+      const { ran, failed } = await outcomes(`${job.url}/${build.number}`);
+      for (const id of ran) { const target = row(id); target.seenIn++; if (failed.has(id)) target.failedIn++; }
     }
   }
   return { builds, tests };
@@ -180,12 +211,20 @@ async function collect(branch, repos) {
 
 /**
  * A test that failed in every environment that ran it is broken; one that failed in some of them
- * flickers. A single environment cannot tell the two apart.
+ * flickers. A single environment cannot tell the two apart — but failing every recent build can.
  */
 function verdictOf(row) {
-  if (row.ran.size < 2) return 'single env';
-  return row.failed.size === row.ran.size ? 'systematic' : 'intermittent';
+  const alwaysFails = row.seenIn > 1 && row.failedIn === row.seenIn;
+  if (row.ran.size < 2) return alwaysFails ? 'systematic' : 'single env';
+  return row.failed.size === row.ran.size || alwaysFails ? 'systematic' : 'intermittent';
 }
+
+/**
+ * An open flicker issue is stale once its test fails everywhere, every time: that is no longer a
+ * flicker. Failing every environment only in bursts stays a (bad) flicker, so it is not flagged.
+ */
+const staleIssue = (row, flicker) =>
+  !!flicker && verdictOf(row) === 'systematic' && row.seenIn > 1 && row.failedIn === row.seenIn;
 
 function report(branch, { builds, tests }, compareBranches, flickerFor, max) {
   const lines = [`# Test triage for [${branch}]`, ''];
@@ -195,7 +234,8 @@ function report(branch, { builds, tests }, compareBranches, flickerFor, max) {
     const staleness = !rev ? 'revision unknown'
       : `ran ${rev.sha.slice(0, 11)}` + (rev.behind == null ? '' : `, ${rev.behind} commit(s) behind the branch`);
     lines.push(`- **${job.label}** — #${job.build.number} ${job.build.result}, `
-      + `${job.build.failCount}/${job.build.totalCount} failed, ${staleness}`);
+      + `${job.build.failCount}/${job.build.totalCount} failed, ${staleness}`
+      + (job.history > 1 ? `, rated over ${job.history} builds` : ''));
   }
 
   const rows = [...tests.values()].filter(row => row.failed.size);
@@ -207,7 +247,8 @@ function report(branch, { builds, tests }, compareBranches, flickerFor, max) {
   lines.push('');
   if (!failures.length) lines.push('No failing test methods.');
   else {
-    const columns = ['Test', 'Jobs', 'Failed/ran envs', 'Verdict', 'Known flicker', ...compareBranches];
+    const columns = ['Test', 'Jobs', 'Failed/ran envs', 'Failed/ran builds', 'Verdict', 'JIRA',
+      ...compareBranches];
     lines.push(`| ${columns.join(' | ')} |`, `|${columns.map(() => '---').join('|')}|`);
     for (const row of failures.slice(0, max)) {
       const flicker = flickerFor(row.id);
@@ -215,8 +256,9 @@ function report(branch, { builds, tests }, compareBranches, flickerFor, max) {
         row.id,
         [...row.jobs].join(', '),
         `${row.failed.size}/${row.ran.size}` + (row.skipped.size ? ` (+${row.skipped.size} skipped)` : ''),
+        `${row.failedIn}/${row.seenIn}`,
         verdictOf(row),
-        flicker ? `${flicker.key} open` : '—',
+        flicker ? `${flicker.key}${staleIssue(row, flicker) ? ' **STALE**' : ' open'}` : '—',
         ...compareBranches.map(b => row.compare?.[b] || '?')
       ].join(' | ') + ' |');
     }
@@ -234,7 +276,7 @@ function report(branch, { builds, tests }, compareBranches, flickerFor, max) {
 }
 
 const args = parseArgs(process.argv.slice(2));
-const target = await collect(args.branch, args.repos);
+const target = await collect(args.branch, args.repos, args.history);
 
 for (const branch of args.compare) {
   const other = await collect(branch, args.repos);
@@ -255,7 +297,10 @@ if (args.json) {
     branch: args.branch,
     builds: target.builds,
     failures: [...target.tests.values()].filter(row => row.failed.size)
-      .map(row => ({ ...row, verdict: verdictOf(row), jira: flickerFor(row.id), pseudo: isPseudoTest(row.id) }))
+      .map(row => ({
+        ...row, verdict: verdictOf(row), jira: flickerFor(row.id),
+        staleIssue: !!staleIssue(row, flickerFor(row.id)), pseudo: isPseudoTest(row.id)
+      }))
   }, replacer, 2));
 } else {
   console.log(report(args.branch, target, args.compare, flickerFor, args.max));
