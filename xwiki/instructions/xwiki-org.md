@@ -11,7 +11,8 @@ below).
 - **Issue tracker:** https://jira.xwiki.org (NOT GitHub Issues). Each repo has its own JIRA project
   key — `XWIKI` (Platform), `XCOMMONS` (Commons), `XRENDERING` (Rendering), a per-extension key for
   contrib. Reference issues by their key (e.g. `XWIKI-12345`). To view/create/update issues use the
-  **`xwiki-jira`** skill (jira-cli or REST); issue-field conventions are in `okf/servers/jira.md`.
+  **`xwiki-jira`** skill, which owns the backend choice and its traps; issue-field conventions are in
+  `okf/servers/jira.md`.
 - XWiki Commons, XWiki Rendering and XWiki Platform are **released together with the same version**.
 - The **Java version depends on the XWiki version** (defined in the `pom.xml`) — build with that JDK,
   not the machine default; the **`xwiki-build`** skill has how. See
@@ -29,13 +30,15 @@ below).
 - Files that only matter until the end of the *current* session stay in the host's own session
   scratch directory instead — the work directory is for state that outlives a session.
 
-## Commit messages
+## Commits, issues & PRs
 
 - When there is an issue, the summary line is the key followed by **the issue's title, verbatim** —
   not a summary you write: `XWIKI-12345: <the JIRA issue title>` (use the repo's own key —
   `XCOMMONS-…`, `XRENDERING-…`, etc.). What *this* commit does goes in the body as `*` bullets.
 - Use `[Misc]` only for trivial changes with no issue; anything affecting users or extension
   developers needs an issue. Full rule: `okf/conventions/commit-messages.md`.
+- **A change with a visible result carries before/after images** — on its JIRA issue, and in the PR
+  body when there is one. Producing them is also how you check it works: `okf/servers/jira.md`.
 
 ## Building & tests
 
@@ -90,11 +93,12 @@ OKF map — topic files under `okf/`; **`okf/index.md` describes each one**, rea
 
 - `okf/conventions/` — `code-style`, `code-comments`, `commit-messages`, `versioning`,
   `backward-compatibility`, `security`, `performance`, `logging`, `naming`, `frontend`,
+  `server-side-rendering`,
   `translations`, `dependencies`; and the xwiki.org documentation rules — `documentation`,
   `documentation-migration`, `documentation-mechanics`, `page-deletion` — applied by
   `xwiki-doc-writing` / `xwiki-doc-convert`.
 - `okf/architecture/` — `component-system`, `macro-refactoring`, `wiki-user-scope`, `solr-search`,
-  `wiki-application-data`.
+  `wiki-application-data`, `required-rights`.
 - `okf/testing/` — `strategy`, `running-docker-its`.
 - `okf/sonarqube/` — which SonarCloud fixes are *correct* in XWiki and which look mechanical but
   silently break something. Read `sonarqube/index.md` first, then **only** the family file for the

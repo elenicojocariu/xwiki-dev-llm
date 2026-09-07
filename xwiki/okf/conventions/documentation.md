@@ -142,6 +142,16 @@ result, a bookmark or a link, none of which carry the surrounding context. Same 
   check says so.
 - **Reference** — prefer **tables**, keep information concise; use **code examples** for API
   references, documenting each element's parameters, types, supported/default values and return value.
+  The two halves of that sentence are not alternatives, and reading the second as licence to drop the
+  first is the observed failure: **a bare signature is a table *column*, not a code example**. Parameters,
+  types, defaults and return value are precisely what a row holds, so an API reference's members go in
+  **one table** (`|=Member |=Returns |=Default |=What it does`), and the code example is reserved for
+  something a cell cannot hold — a usage snippet, a builder call, a whole role interface. A **section per
+  member** (heading + signature + a line of prose, repeated) is the shape to avoid: it costs a page seven
+  screens to say what a seven-row table says in one, and it stays invisible to review because each section
+  reads fine on its own. It earns its place only when every section carries something no cell can hold, such
+  as a screenshot per option. Same defect, second shape: a `name: meaning` **bullet list** is a two-column
+  table written as prose. Both are flagged, advisory, by `docpages.py lint`.
 - **Explanation** — explain concepts, limitations, consequences, and background; link to the How-tos
   applying the concept and the References pinning down its details.
 - **A topic page** — top of a tree, with children — **must be an Explanation whose first sentence
@@ -164,13 +174,12 @@ replace a paragraph:
 - **Developer pages: code examples.** A runnable snippet (script macro, Java API call, REST request,
   configuration file) shows in five lines what a paragraph struggles to say. Use the code macro with an
   explicit `language`.
-- **Explanation pages: a diagram, when there is a structure to show.** An Explanation has no UI steps to
-  screenshot, but one that discusses **design or architecture** is often carried by an **architecture
-  diagram** — components and what flows between them — especially for a Developer audience. For a User
-  audience, prefer a diagram that reads without technical vocabulary: a lifecycle, a state or workflow
-  diagram, a decision tree between alternatives, a before/after. Be creative about what actually
-  clarifies the concept. Diagrams use the **PlantUML macro with the `bluegray` theme** (see below), so
-  the source stays editable in the page.
+- **Explanation pages: a diagram, when there is a structure to show.** Four shapes need one: a
+  **component structure** (the parts and what flows between them), a **request or data flow**, a
+  **lifecycle or state machine**, and a **decision between alternatives**. Three do not: a risk or
+  policy narrative, a page defining a single idea, and a FAQ-shaped page. Decide by shape, not by
+  audience — but for a User audience draw it without technical vocabulary. Diagrams use the
+  **PlantUML macro with the `bluegray` theme** (see below), so the source stays editable in the page.
 - **Do not force it.** This is a strong default, not a checkbox: a short Explanation of a single concept,
   a small Reference table, a FAQ-shaped page can be perfectly complete with no visual at all. A
   decorative screenshot, a diagram of something that is not a structure, or a snippet added to satisfy
@@ -233,8 +242,8 @@ use, even though level 2 is the norm for ordinary section headings elsewhere —
   delete it, and do not "compress" it into a subordinate clause. Restating what the next section
   already says, motivating the feature at length, and describing what the reader can see on screen are
   the three that inflate a page most. Prefer a **screenshot or a code example** over a paragraph
-  wherever one will do (see "Every page shows something" above), a **table** over prose in a Reference,
-  and a **link** over a summary.
+  wherever one will do (see "Every page shows something" above), a **table** over prose in a Reference
+  (see "Content rules per type" for the two prose shapes that hide a table), and a **link** over a summary.
 - **A hub page's job is to route, not to narrate.** An extension/topic landing page that explains the
   feature in several paragraphs but never links to its own How-to, Reference and Explanation pages has
   failed at the one thing it exists for. Every page it introduces is **named and linked** (in the prose,
@@ -393,7 +402,11 @@ These rules decide whether a page renders as intended, so they belong to authori
   in**, a misuse the guide's
   [WCAG](https://dev.xwiki.org/xwiki/bin/view/Community/DocGuide/WorkingAttachments/wcag/) page names
   explicitly (the capture version belongs nowhere on the page: a stale screenshot is replaced, not
-  dated).
+  dated). **Trap: the `alt` is accepted and then dropped.** On xwiki.org `{{image}}` is a wiki macro
+  of the Documentation Application (`DocApp.Code.ImageMacro`) that declares an `alt` parameter and
+  never passes it to the image it renders, so every page of the tree renders its *file name* as the
+  alt text. Write it anyway: it is the documented form, and it is in the page for the day the macro
+  emits it.
 - **In the `documentation` space `size` is mandatory and `width` is forbidden.** The quality checker
   rejects the image otherwise: *"Best practice: The Image macro, when used in the "documentation"
   space, must specify a 'size' parameter and no 'width' one."* A screenshot therefore **cannot** be
