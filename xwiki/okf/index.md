@@ -129,6 +129,16 @@ The full how-to-read-and-extend protocol is the `xwiki-knowledge` skill.
   by creating the page, since deriving it from existing pages races for the whole editing session; a
   wiki-page migration is idempotent only if it drops the object it matched on; and an entry template
   must carry the marker class its queries locate it by.
+- **required-rights** — declaring required rights on a page an extension ships: enforcement caps the
+  page *author*, so an under-declared level disables the page's function silently instead of failing.
+  The analyzer only knows that registering an object is privileged for the object types someone wrote
+  an analyzer for — **`XWiki.WikiMacroClass` has none**, so a wiki-visible macro is reported as
+  `script` while registration demands wiki admin of the macro document's author, and declaring
+  `script` leaves it unregistered (`Unknown macro`) with nothing in the analysis to hint at it; such
+  a page can only be validated by a fresh install, never on a wiki that already has it. Plus the
+  mandatory `<xwikidoc version="1.6">`, enforcement being forced onto every document an enforcing
+  page's script saves (and *not* capping an include with `author="target"`), and reading the rights
+  back in a `PageTest` through `DocumentRequiredRightsManager`.
 - **wiki-user-scope** — a subwiki's user scope (local/global/both) is stored on its own
   `WikiManager.WikiUserConfiguration` doc (not the descriptor) and defaults to `GLOBAL_ONLY` when absent.
 - **solr-search** — XWiki's Solr backend: embedded by default, externalisable to a remote/standalone
