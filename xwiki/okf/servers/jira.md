@@ -14,13 +14,14 @@ sources:
 JIRA** (Server/Data Center, not Cloud). There is **no MCP** for it. Two access paths, both driven by
 the **`xwiki-jira`** skill (that skill owns the *procedure*; this file owns the *facts*):
 
-- **`jira-cli`** (recommended) — `jira issue view/create/list/move/comment …`. Setup is in the
-  plugin README (on-premise install: `JIRA_API_TOKEN` = your JIRA personal access token,
-  `JIRA_AUTH_TYPE=bearer`, then `jira init` → installation type *Local*, server
-  `https://jira.xwiki.org`, auth type *bearer*).
-- **REST API** (fallback when `jira-cli` is not installed) — the same
-  `JIRA_API_TOKEN` as a bearer token:
+- **REST API** — required for writing any description or comment, since `jira-cli` mangles text
+  bodies; also the only path for attachments, comment edits and type changes. Uses `JIRA_API_TOKEN`
+  as a bearer token:
   `curl -H "Authorization: Bearer $JIRA_API_TOKEN" https://jira.xwiki.org/rest/api/2/…`.
+- **`jira-cli`** — convenient for reads, searches, field and status changes
+  (`jira issue view/list/move …`). Setup is in the plugin README (on-premise install:
+  `JIRA_API_TOKEN` = your JIRA personal access token, `JIRA_AUTH_TYPE=bearer`, then `jira init` →
+  installation type *Local*, server `https://jira.xwiki.org`, auth type *bearer*).
 
 ## Project keys
 
