@@ -132,10 +132,10 @@ The full how-to-read-and-extend protocol is the `xwiki-knowledge` skill.
 - **required-rights** — declaring required rights on a page an extension ships: enforcement caps the
   page *author*, so an under-declared level disables the page's function silently instead of failing.
   The analyzer only knows that registering an object is privileged for the object types someone wrote
-  an analyzer for — **`XWiki.WikiMacroClass` has none**, so a wiki-visible macro is reported as
-  `script` while registration demands wiki admin of the macro document's author, and declaring
-  `script` leaves it unregistered (`Unknown macro`) with nothing in the analysis to hint at it; such
-  a page can only be validated by a fresh install, never on a wiki that already has it. Plus the
+  an analyzer for — **`XWiki.WikiMacroClass` had none** up to 18.6 (XWIKI-24822), so a wiki-visible
+  macro was reported as `script` while registration demands wiki admin of the macro document's
+  author, and declaring `script` left it unregistered (`Unknown macro`); such a page can only be
+  validated by a fresh install, never on a wiki that already has it. Plus the
   mandatory `<xwikidoc version="1.6">`, enforcement being forced onto every document an enforcing
   page's script saves (and *not* capping an include with `author="target"`), and reading the rights
   back in a `PageTest` through `DocumentRequiredRightsManager`.
