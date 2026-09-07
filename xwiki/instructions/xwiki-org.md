@@ -11,7 +11,8 @@ below).
 - **Issue tracker:** https://jira.xwiki.org (NOT GitHub Issues). Each repo has its own JIRA project
   key — `XWIKI` (Platform), `XCOMMONS` (Commons), `XRENDERING` (Rendering), a per-extension key for
   contrib. Reference issues by their key (e.g. `XWIKI-12345`). To view/create/update issues use the
-  **`xwiki-jira`** skill (jira-cli or REST); issue-field conventions are in `okf/servers/jira.md`.
+  **`xwiki-jira`** skill, which owns the backend choice and its traps; issue-field conventions are in
+  `okf/servers/jira.md`.
 - XWiki Commons, XWiki Rendering and XWiki Platform are **released together with the same version**.
 - The **Java version depends on the XWiki version** (defined in the `pom.xml`) — build with that JDK,
   not the machine default; the **`xwiki-build`** skill has how. See
