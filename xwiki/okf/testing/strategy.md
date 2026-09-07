@@ -60,6 +60,9 @@ This is the declarative map of how testing works in XWiki. For **doing** the wor
   test — widening an already-private helper to public counts — and do not create a page object for a
   page the test itself creates as a fixture, which is not a real XWiki page. What is specific to the
   test, such as the wiki content it gives that fixture page, likewise stays in the test.
+  **`getDriver()` calls already in the test class are not a precedent** — most classes predate the
+  rule, so matching the surrounding code is exactly what breaks it. New code complies, and a method
+  edited for any other reason is the moment to move its calls behind a page object.
 - **Don't pay the timeout (Docker functional tests)** — a test must never burn the full Selenium
   wait timeout waiting for something that will not appear. The waiting APIs (`findElement`,
   `findElements`, and the `waitUntil…` helpers) are for elements *expected to be present*; to assert
