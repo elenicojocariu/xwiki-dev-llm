@@ -31,15 +31,19 @@ to `DefaultObjectRequiredRightAnalyzer`, which reads the object's wiki-content p
 
 - Covered: `UIExtensionRequiredRightsAnalyzer` maps a UI extension's `scope` to wiki admin;
   `TranslationDocumentObjectRequiredRightAnalyzer` does the same for a wiki-scoped bundle.
-- **Not covered: `XWiki.WikiMacroClass`.** The only analyzer that module ships is for
-  `WikiMacroParameterClass`. So a wiki macro is reported as `script` from its body's Velocity, while
+- **`XWiki.WikiMacroClass` was not covered** up to 18.6 — the only analyzer that module ships is for
+  `WikiMacroParameterClass`, so a wiki macro was reported as `script` from its body's Velocity while
   `DefaultWikiMacroFactory.isAllowed` demands, **of the macro document's author**, `Right.ADMIN` at
   `EntityType.WIKI` when visibility is *Current Wiki* and `Right.PROGRAM` when it is *Global*.
-  Declaring `script` on a wiki-visible macro page leaves the macro **unregistered**: every page using
-  it renders `Unknown macro: <id>`, with nothing in the analysis to hint at it.
+  Declaring `script` on a wiki-visible macro page left the macro **unregistered**: every page using
+  it rendered `Unknown macro: <id>`, with nothing in the analysis to hint at it. Tracked as
+  **XWIKI-24822** and expected to be fixed, so **check whether your version has the analyzer before
+  overriding its recommendation** — grep the wikimacro-store module's `META-INF/components.txt`.
+  It is kept here as the worked example of the general rule, which outlives the specific gap.
 
-So when a page carries an object of a type with no analyzer, derive the level from what the platform
-checks at registration, not from what the analyzer reports, and say in a comment why the two differ.
+So when a page carries an object whose registration is privileged and whose type has no analyzer,
+derive the level from what the platform checks at registration, not from what the analyzer reports,
+and say in a comment why the two differ.
 **A page like this cannot be validated on a running wiki that already has it installed** — macros,
 UI extensions, bundles and listeners register on save and at startup, so a re-install over a live
 wiki keeps serving the already-registered component. Only a fresh install (a Docker IT) is evidence.
