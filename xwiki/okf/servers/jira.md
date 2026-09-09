@@ -98,6 +98,10 @@ field (for the version(s) in Fix Version/s).
   emptiness is what a JQL query looks for to find undocumented issues.
 - A bug fix with **no** user- or developer-visible impact is the `N/A` case. But a bug fix that changes
   the user experience **still needs a release-note entry**.
+- Documentation written **after** the issue closes — a separate doc task, a later session — leaves the
+  documentation field unfillable at close time, and it is then the half that silently stays empty while
+  the release-note field still gets its `N/A`. Filling it in is the **last step of the doc task**, over
+  every issue that task documents.
 
 Set the transition + resolution with `jira-cli` (`jira issue move {KEY} "Close Issue"`) or REST
 (`POST /rest/api/2/issue/{KEY}/transitions` with
