@@ -60,6 +60,9 @@ The full how-to-read-and-extend protocol is the `xwiki-knowledge` skill.
   context-author right checks in script services, configurable HTML sanitizer, and never
   interpolating identifiers/references into queries or include/display targets ($doc vs
   $xcontext.macro.doc).
+- **script-services** — a new script service throws (callers use `#try()`); an existing null-returning
+  signature must not be changed; the Method Arguments Uberspector plus a `Converter` is why a service
+  never needs bean-factory methods.
 - **performance** — prefer streaming over buffering; never load an unbounded payload (attachment,
   body, upload, export, query result) fully into memory.
 - **logging** — a log argument is an **object**: it is captured in the `LogEvent`, XStream-serialized
@@ -136,9 +139,10 @@ The full how-to-read-and-extend protocol is the `xwiki-knowledge` skill.
   macro was reported as `script` while registration demands wiki admin of the macro document's
   author, and declaring `script` left it unregistered (`Unknown macro`); such a page can only be
   validated by a fresh install, never on a wiki that already has it. Plus the
-  mandatory `<xwikidoc version="1.6">`, enforcement being forced onto every document an enforcing
-  page's script saves (and *not* capping an include with `author="target"`), and reading the rights
-  back in a `PageTest` through `DocumentRequiredRightsManager`.
+  mandatory `<xwikidoc version="1.6">`, enforcement being read per-document (so it caps neither an
+  `{{include}}` nor a wiki macro, but a *script* save does force it onto what it saves, and an empty
+  enforced set makes a Velocity title display as source), and reading the rights back in a `PageTest`
+  through `DocumentRequiredRightsManager`.
 - **wiki-user-scope** — a subwiki's user scope (local/global/both) is stored on its own
   `WikiManager.WikiUserConfiguration` doc (not the descriptor) and defaults to `GLOBAL_ONLY` when absent.
 - **solr-search** — XWiki's Solr backend: embedded by default, externalisable to a remote/standalone

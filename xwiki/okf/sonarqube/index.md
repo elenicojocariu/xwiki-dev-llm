@@ -87,8 +87,10 @@ Each of these is either bad ROI or a false positive against a deliberate XWiki i
   mean different things is a design decision.
 - **`S115`** constant naming, **`S1214`** constants-in-interface — cross-module renames, breaking.
 - **`S1845`** name differing only by capitalization — a cross-module rename of published API.
-- **`S2447`** "return null from a Boolean method" — in XWiki **script services** returning `null` is a
-  deliberate contract meaning "an error occurred, call `getLastError()`". Not a defect.
+- **`S2447`** "return null from a Boolean method" — on an existing **script service** returning `null`
+  is the pre-`#try()` contract meaning "an error occurred, call `getLastError()`", and changing the
+  signature breaks backward compatibility. Not a defect. (A *new* script service throws instead —
+  [[script-services]].)
 - **`S1215`** `System.gc()` — the enclosing method is sometimes a deliberately exposed API (`$xwiki.gc()`).
 - **`S2696`** writing to a static field from an instance method — usually a lazy-init needing sync.
 - **`S2157`** "add `clone()`", **`S1113`** `finalize()` — API changes, not cleanups.
