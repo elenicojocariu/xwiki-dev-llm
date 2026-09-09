@@ -195,7 +195,11 @@ usually does, so the version is copied, never invented. Moving it is the whole f
 ```
 
 **Drop** when the version is not written down: no Javadoc, no `@deprecated` tag, or a tag naming no
-version (`@deprecated use {@link X} instead`). Never guess one.
+version (`@deprecated use {@link X} instead`). Never guess one — but that is a property of an element
+declaring its **own** API. **An `@Override` inherits the version**: index every
+`@Deprecated(since = "X")` in the repos by `(method name, parameter count)`, look the override up, and
+copy. Verify the class implements the interface the match came from; drop when the parent is not
+deprecated at all.
 
 Three mechanics:
 
