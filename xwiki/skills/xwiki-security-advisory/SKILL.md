@@ -1,0 +1,138 @@
+---
+name: xwiki-security-advisory
+description: Draft the content of a GitHub Security Advisory for an XWiki vulnerability, following the official template published on the XWiki Security Policy page (dev.xwiki.org). Use when asked to write/prepare/draft a security advisory, given a security-restricted JIRA issue key (e.g. XWIKI-24717) that needs a GHSA draft, or asked to fill in Impact/CVSS/Patches/Workarounds/References for a vulnerability. Always re-fetches the live template and the live JIRA issue rather than reusing a cached copy of the template or the wording of a past advisory. For the disclosure rules (obfuscated commits, restricted JIRA issues, the private-fork merge recipe) use xwiki-knowledge (okf/processes/security-policy.md); for reading/updating the JIRA issue itself use xwiki-jira; for the eventual fix's PR/commit conventions use xwiki-pull-request.
+---
+
+# XWiki security advisory drafting
+
+Produces the markdown body + metadata for a GitHub Security Advisory (GHSA) draft on an
+`xwiki`/`xwiki-contrib` repo, from a security-restricted JIRA issue. This skill only **drafts**
+content — creating the actual advisory on GitHub, inviting collaborators, or publishing/disclosing
+it are separate, explicitly-confirmed actions (see Step 6).
+
+## Before you start — confidentiality
+
+The vulnerability is not public. Everything this skill produces or reads is confidential until
+disclosure ([[security-policy]] in the OKF owns the full rule):
+
+- **Never** write the draft into the repo, a commit, a PR, a public issue/comment, or a public chat.
+- Save the draft only under the session's **work directory** (per the org-wide "Work files"
+  convention), clearly marked confidential — never under a repo path.
+- Don't paste the vulnerability description into anything that isn't either the private GitHub
+  advisory draft or a local work file.
+
+## Step 1 — Fetch the source JIRA issue
+
+Security issues carry a restricted **Security Level** (e.g. "Confidential"), so `fields.security` is
+set and the issue is invisible to a token/account outside the security group. Fetch the full issue
+over REST (not `jira-cli`, which doesn't surface custom fields well) to get every field at once:
+
+```bash
+curl -s -H "Authorization: Bearer $JIRA_API_TOKEN" \
+  "https://jira.xwiki.org/rest/api/2/issue/<KEY>" -o /tmp/issue.json
+```
+
+From the response's `fields`, collect:
+
+- `summary`, `description` (the vulnerability write-up, in JIRA wiki markup — usually has an
+  `h2. Impact` / `h2. PoC` structure you can lift from directly), `security` (confirms it's
+  restricted), `priority`, `versions` (Affects), `fixVersions`, `reporter`.
+- Scan `customfield_*` values for a **CVSS vector string** (starts `CVSS:4.0/…` or `CVSS:3.1/…`) and
+  its paired numeric score — instances number these fields differently, so grep for the shape, don't
+  hardcode a field id.
+- A `customfield_*` holding a `devSummaryJson`/pull-request bean can reveal whether a fix PR/commit
+  already exists — useful for the Patches/References sections once a fix lands (remember: the fix
+  commit message will be **obfuscated**, per [[security-policy]], so don't expect the JIRA key in it).
+
+**If the fetch 404s**, that means the account behind `JIRA_API_TOKEN` cannot see a restricted issue
+at that key — not that the key doesn't exist. Tell the user rather than assuming it's invalid.
+
+## Step 2 — Fetch the live advisory template and scoring guidance
+
+The template lives on the **XWiki Security Policy** page (`dev.xwiki.org`, space
+`Community.SecurityPolicy`). Read it fresh every time — it is community-maintained and can change;
+never reuse a copy embedded in a previous conversation, this skill, or another advisory as the
+source of truth. It's a public page, reachable over REST **without a token**:
+
+```bash
+curl -s "https://dev.xwiki.org/xwiki/rest/wikis/dev/spaces/Community/spaces/SecurityPolicy/pages/WebHome" \
+  -H "Accept: application/json"
+```
+
+Take the `content` field (xwiki/2.1 syntax). Two parts of it matter:
+
+- The **`= Security Advisory template and information =`** section holds the literal markdown
+  template, inside a `{{code language="markdown"}} … {{/code}}` block — copy its section structure
+  (`### Impact`, `#### CVSS Score Computation Details` table, `### Patches`, `### Workarounds`,
+  `### References`, `### For more information`, `### Attribution`) verbatim; don't invent, drop, or
+  reorder sections.
+- The **`= Severity =`** section above it has the CVSS banding (Critical at score ≥ 7, "Blocker" for
+  actively-exploited issues) and per-metric best practices — notably: Attack Vector is always
+  Network; the Privileges-Required mapping from XWiki rights to None/Low/High; the rule that any
+  vulnerability needing Script right (or higher) caps every impact metric at Low; and fixed
+  defaults for XSS (Confidentiality/Integrity/Availability = High, Subsequent = Low/Low/None) and
+  SSRF (Subsequent Confidentiality/Integrity = Low, Availability = Low). Use these to justify each
+  row of the CVSS table with a one-line comment, the way past advisories do.
+
+If the page has moved (404), rediscover it instead of guessing a new path:
+
+```bash
+curl -s -G "https://dev.xwiki.org/xwiki/rest/wikis/dev/query" \
+  --data-urlencode "q=title:'XWiki Security Policy'" --data-urlencode "type=solr"
+```
+
+## Step 3 — Draft the advisory
+
+Fill the template using the mapping below; leave nothing as a placeholder without flagging it to the
+user:
+
+| Advisory field | Source |
+|---|---|
+| Title | JIRA `summary` |
+| Impact prose | JIRA `description`'s explanation/PoC, rewritten as impact + affected versions, in your own words — not a verbatim copy-paste of internal notes |
+| CVSS table | The vector found in Step 1 + the Step 2 scoring guidance for the *comment* column |
+| Affected package(s) / vulnerable version range | The module(s) touched, and `versions` (Affects) → GitHub's version-range syntax (see the template's own note on OSV range syntax gotchas) |
+| Patches | `fixVersions` if the fix isn't released yet ("will be fixed in…"); the actual released versions + patch commit once it is |
+| Workarounds | From the JIRA description if a mitigation is mentioned, else "no known workaround other than upgrading" |
+| References | The JIRA issue URL, plus the fix commit URL once it exists |
+| Credit / Attribution | `reporter`, or a named security researcher from the description — **ask the user to confirm the reporter consents to be credited** before naming them, and note that a non-committer reporter needs adding as a collaborator on the draft |
+
+CWE: pick the closest match from https://cwe.mitre.org/data/index.html — this is a per-vulnerability
+judgment call, not something to default without reasoning about the actual flaw (e.g. broken access
+control against a user-controlled identifier is usually CWE-639, missing authorization generally is
+CWE-862, XSS is CWE-79, etc.).
+
+## Step 4 — Save the draft
+
+Write the full draft — both the metadata (title, CVSS vector/score, CWE, affected versions, credits)
+and the markdown body for the GitHub advisory's description field — to a file under the work
+directory, e.g. `<work>/<repo>/<date>-<JIRA-KEY>-security-advisory/advisory-draft.md`, headed with a
+**CONFIDENTIAL, do not commit or post publicly** banner. Show it to the user in the conversation too.
+
+## Step 5 — Creating the real draft advisory on GitHub (only when asked)
+
+Drafting the text is safe to do proactively; actually creating the GitHub Security Advisory is a
+repo-visible action (visible to all org owners immediately) and must be explicitly requested, not
+assumed. When the user asks for that step:
+
+- Create it via `gh api repos/<owner>/<repo>/security-advisories -X POST -f ...` or point the user to
+  the GitHub UI flow linked from the template section (both are described in
+  https://docs.github.com/en/code-security/security-advisories/repository-security-advisories/creating-a-repository-security-advisory).
+- Add the **`XWiki/Security`** GitHub team as a collaborator on the draft — the policy page calls
+  this out explicitly as an easy thing to forget.
+- Add a link to the draft advisory back on the JIRA issue (a normal comment/field edit — safe since
+  the issue is already restricted).
+- Do **not** merge any fix through the advisory's temporary private fork via the GitHub UI — that
+  leaks the JIRA title into the commit log. Use the manual merge recipe in
+  [[security-policy]] (`okf/processes/security-policy.md`) instead.
+- Publishing/disclosing the advisory (making it public) happens only once the embargo date is
+  reached **and** a CVE ID has been received — never publish opportunistically.
+
+## Troubleshooting
+
+- **JIRA fetch 404s** → account can't see this restricted issue (see Step 1), not a bad key.
+- **No CVSS vector found in `customfield_*`** → it may not have been scored yet; compute it with the
+  user using the Step 2 guidance and the official calculator (https://www.first.org/cvss/v4.0/)
+  rather than guessing a score.
+- **Fix not merged yet** → say so in the Patches section ("will be fixed in …") instead of inventing
+  a patch commit; come back and fill in the real commit URL once it lands.
