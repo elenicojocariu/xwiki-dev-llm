@@ -101,12 +101,18 @@ everything a regex cannot decide.
    should now see*: a short "The macro is inserted in the page, as follows:" plus a **screenshot** (or,
    on a Developer page, the produced output). A procedure that stops at the last action leaves the
    reader unable to tell whether it worked.
-7. **Apply the style rules** — `"quotes"` for UI elements, uppercase-first XWiki terminology,
+7. **Put a Reference's members in one table** — `|=Member |=Returns |=Default |=What it does`, not a
+   section per member and not a `name: meaning` bullet list. "Use code examples for API references"
+   asks for the parameters, types, defaults and return value, which is a *row*: a bare signature is a
+   column, and the code example is reserved for what a cell cannot hold (a usage snippet, a builder
+   call, a whole role interface). A section per member earns its place only when each carries something
+   uncellable, such as a screenshot per option.
+8. **Apply the style rules** — `"quotes"` for UI elements, uppercase-first XWiki terminology,
    `##literals##`, link-reference syntax (never hardcoded URLs), `{{scm}}` for GitHub files, the
    code macro with an explicit `language`, the display macro to avoid duplication, and **no overused
    em dashes** (use the comma, period, colon or parentheses the sentence needs; quoted text keeps its
    dashes).
-8. **Give the page something to look at, wherever it earns its place** — **screenshots** on
+9. **Give the page something to look at, wherever it earns its place** — **screenshots** on
    User/Administrator pages (every UI element or screen the reader must find), **code examples** on
    Developer pages, and on an Explanation about design/architecture a **PlantUML `bluegray` diagram**
    (components and flows for developers; a lifecycle, workflow or decision diagram for users — be
@@ -116,16 +122,16 @@ everything a regex cannot decide.
    maintainer an update. Capture screenshots on the local instance agreed above, using the
    [Documentation Resources](https://dev.xwiki.org/xwiki/bin/view/Community/DocGuide/DocumentationResources/)
    XARs for realistic content.
-9. **Handle attachments by the rules** — kebab-case name with a lowercase extension and **stop words
+10. **Handle attachments by the rules** — kebab-case name with a lowercase extension and **stop words
    removed** (the naming checker applies the page-name rules to attachments), images via the
    `{{image}}` macro with an `alt` and the mandatory `size`, **framed on the element plus the nearest
    landmark that locates it** and cropped to exactly that size's pixel width, with a red
    (`255, 0, 0`) box around the element concerned, **videos in `webm` displayed with the
    `{{embed}}` macro and never as a link**, Gallery for several images, PlantUML (`bluegray`) for
    diagrams. See `okf/conventions/documentation.md`.
-10. **Respect version perspective** — write for the latest version; use `{{version}}` (with `before`
+11. **Respect version perspective** — write for the latest version; use `{{version}}` (with `before`
     for changed behavior) only for genuine new/changed behavior.
-11. **Run the de-duplication *and trimming* pass before saving** — this is a separate step because every
+12. **Run the de-duplication *and trimming* pass before saving** — this is a separate step because every
     page reads fine on its own and both defects are invisible while writing. Start with the two that need
     no judgement and that `lint` decides for you — **the sibling How-tos' step 1** and **an attachment
     name declared by more than one page** — then lay the page's intro next
@@ -136,7 +142,7 @@ everything a regex cannot decide.
     length itself hides content. A How-to whose numbered list is wrapped in explanatory paragraphs, and
     a hub page that narrates the feature instead of **linking every page it introduces**, both fail this
     step.
-12. **Save.** A new or substantially rewritten page is a **major** change: save it via a **Change
+13. **Save.** A new or substantially rewritten page is a **major** change: save it via a **Change
     Request**, adding to an existing open one on that page if there is one. A pure typo, broken-link
     or small-rephrasing fix is a **minor** change: save it **directly**, ticked "minor", with a short
     summary — do **not** open a Change Request for it. See `okf/conventions/documentation.md`.
@@ -160,8 +166,13 @@ the procedure, what the deletion wizard does and does not repoint, and the triag
 
 ## Review checklist
 
-When reviewing a page, verify and report against these (each finding should cite the rule it relates
-to; confirm against the live guide when borderline):
+Apply it **page by item**: every item against every page, and record the ones that came back clean
+alongside the findings. A checklist run as a list of things to look for stops at the pages that
+already have findings, and "not looked at" then reads exactly like "no finding". `docpages.py lint`
+covers only the mechanical subset, so an item it cannot decide — duplication, verbosity, whether a
+visual is missing — is only covered if this pass covers it.
+
+Each finding cites the rule it relates to; confirm against the live guide when borderline.
 
 - [ ] **Type** — clearly one Diataxis type (not mixing How-to + Reference + …) with a target audience.
 - [ ] **Title** — follows the verb rule for its type; Tutorial titles are specific.
@@ -170,10 +181,21 @@ to; confirm against the live guide when borderline):
       inline explanations.
 - [ ] **Result step** — a How-to/Tutorial's **last step shows the result** (what the reader should now
       see), normally with a screenshot; the list does not stop at the final action.
-- [ ] **Shows, not only tells** — User/Administrator pages have **screenshots** of the UI they describe;
-      Developer pages have **code examples**; an Explanation about design/architecture has a diagram where
-      there is a structure to show. Flag a *missing* visual only where it would replace or clarify prose —
-      and flag a **gratuitous** one too.
+- [ ] **Shows — User/Administrator** — **screenshots** of the UI the page describes, on the steps that
+      need them.
+- [ ] **Shows — Developer** — **code examples**, and a result step showing the **produced output**
+      rather than a screenshot of a UI the page does not have.
+- [ ] **Shows — Explanation** — a **diagram** where there is a component structure, a request or data
+      flow, a lifecycle or a decision between alternatives; none for a risk narrative, a
+      single-concept definition or a FAQ-shaped page.
+- [ ] **Shows — Reference** — member-by-member data is **one table**, not a section per member
+      (heading + signature + a line of prose) and not a `name: meaning` bullet list. A bare signature
+      is a column, not a code example; the code example is for what a cell cannot hold. Check this
+      **even on a page whose facts are all correct** — the observed miss was a review that pronounced a
+      seven-member API reference "complete and correct" and never asked about its shape.
+- [ ] **No gratuitous visual** — flag a decorative screenshot, a diagram of something that is not a
+      structure, or a snippet added to satisfy a rule. The test is whether it replaces or clarifies
+      something the prose does badly.
 - [ ] **Verbosity** — no sentence survives that the reader does not need in order to act; no paragraph
       restates the next section, motivates the feature at length, or describes what a screenshot shows.
 - [ ] **Hub pages link** — a landing/hub page **names and links every page it introduces** (in the prose

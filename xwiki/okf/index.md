@@ -39,6 +39,11 @@ The full how-to-read-and-extend protocol is the `xwiki-knowledge` skill.
   and the LESS `contentType` needed to read colour-theme variables; WCAG 2.2 AA and the wiki-page
   accessibility traps (naming a control emitted from a page, image alt text, `col-xs-*` is not
   responsive).
+- **server-side-rendering** — code running inside a wiki page, sheet or template that produces wiki
+  syntax or HTML: blocks are separated by blank lines, which Velocity's space gobbling (a line ending
+  with a directive loses its newline) and `$doc.display` (a single-line `{{html}}` macro where the raw
+  property value was multi-line) silently remove, nesting a paragraph or leaving a standalone-only
+  macro such as `{{gallery}}` used inline.
 - **translations** — the key lifecycle: only en_US is committer-maintained (US spelling), where a
   bundle lives and the l10n.xwiki.org + Weblate-script registration a new one needs, deprecating a key
   in the `#@deprecatedstart` section, renaming with `#@deprecated`, and why keys are never moved.
@@ -52,7 +57,9 @@ The full how-to-read-and-extend protocol is the `xwiki-knowledge` skill.
   evolve interfaces via default methods.
 - **security** — escaping APIs, untrusted user input & translations, only Velocity runs on Script
   Right (every other language also needs Programming Right, but a script service does not),
-  context-author right checks in script services, configurable HTML sanitizer.
+  context-author right checks in script services, configurable HTML sanitizer, and never
+  interpolating identifiers/references into queries or include/display targets ($doc vs
+  $xcontext.macro.doc).
 - **performance** — prefer streaming over buffering; never load an unbounded payload (attachment,
   body, upload, export, query result) fully into memory.
 - **logging** — a log argument is an **object**: it is captured in the `LogEvent`, XStream-serialized
@@ -122,6 +129,16 @@ The full how-to-read-and-extend protocol is the `xwiki-knowledge` skill.
   by creating the page, since deriving it from existing pages races for the whole editing session; a
   wiki-page migration is idempotent only if it drops the object it matched on; and an entry template
   must carry the marker class its queries locate it by.
+- **required-rights** — declaring required rights on a page an extension ships: enforcement caps the
+  page *author*, so an under-declared level disables the page's function silently instead of failing.
+  The analyzer only knows that registering an object is privileged for the object types someone wrote
+  an analyzer for — **`XWiki.WikiMacroClass` had none** up to 18.6 (XWIKI-24822), so a wiki-visible
+  macro was reported as `script` while registration demands wiki admin of the macro document's
+  author, and declaring `script` left it unregistered (`Unknown macro`); such a page can only be
+  validated by a fresh install, never on a wiki that already has it. Plus the
+  mandatory `<xwikidoc version="1.6">`, enforcement being forced onto every document an enforcing
+  page's script saves (and *not* capping an include with `author="target"`), and reading the rights
+  back in a `PageTest` through `DocumentRequiredRightsManager`.
 - **wiki-user-scope** — a subwiki's user scope (local/global/both) is stored on its own
   `WikiManager.WikiUserConfiguration` doc (not the descriptor) and defaults to `GLOBAL_ONLY` when absent.
 - **solr-search** — XWiki's Solr backend: embedded by default, externalisable to a remote/standalone
@@ -188,13 +205,16 @@ Applied by `xwiki-fix-sonarqube-issue`, which owns the *procedure*.
   browser-like User-Agent**, only `/rest` honors Basic auth, the `XWiki-Form-Token` CSRF header, and
   the `extensions` subwiki id) and the `~/.xwiki-credentials` convention (never printed, only
   sourced).
-- **jira** — accessing jira.xwiki.org (jira-cli or REST), the durable issue-field conventions
-  (Component, Affects Version = oldest affected/else last LTS, Fix Version); values are volatile;
+- **jira** — accessing jira.xwiki.org (jira-cli or REST), the before/after images a visibly changing
+  fix owes its issue whether or not it has a PR, the durable issue-field conventions
+  (Component, Affects Version = oldest affected/else last LTS, Fix Version, and the `flickering`
+  label + "Flickering Test" field that let a CI failure be joined to its issue); values are volatile;
   resolving/closing (Fixed vs. Cannot Reproduce for already-covered issues, assign to yourself);
   attachments (REST-only, and the attachment URL is how an image reaches a GitHub PR body); and
   wiki-markup gotchas (wrap literals in `{{…}}`, don't over-escape prose, never escape inside `{code}`).
 - **jenkins** — querying ci.xwiki.org through the Jenkins REST API (`/api/json?tree=…`, anonymous
-  read) instead of scraping the UI: the multibranch URL shape, the endpoints for builds / failing
+  read) instead of scraping the UI: the multibranch URL shape, the two functional-test jobs and the
+  environment matrix behind them, the endpoints for builds / failing
   tests / changesets / built SHA / artifacts / `consoleText`, and the **Cloudflare trap where a
   spoofed browser User-Agent gets a 403 while plain `curl` gets 200**. Plus the traps in reading a
   result: `FAILURE` (broke outside the tests) vs `UNSTABLE` (tests failed), why a test case's
@@ -203,7 +223,8 @@ Applied by `xwiki-fix-sonarqube-issue`, which owns the *procedure*.
   `parent-platform` moving `${platform.version}`.
 
 ### processes/
-- **release** — how XWiki versions/releases (Commons+Rendering+Platform together); detailed steps are
+- **release** — how XWiki versions/releases (Commons+Rendering+Platform together), and which stable
+  branches a fix may be backported to (the cycle−2 branch is security-only); detailed steps are
   volatile pointers to the dev wiki.
 - **security-policy** — CVSS-4 severity scoring (volatile; verify) and the durable rule never to
   reveal a vulnerability publicly until disclosure (obfuscated commits, restricted JIRA issues); plus
@@ -225,7 +246,8 @@ each grounded in a cited source. `_template.md` holds the format and the groundi
 `xwiki-convert-tests-docker`, `xwiki-fix-flickering-docker-test`, `xwiki-increase-test-coverage`,
 `xwiki-legacy`, `xwiki-deploy-extension`, `xwiki-rest-api`, `xwiki-xar-pages`, `xwiki-doc-writing`, `xwiki-doc-convert`, `xwiki-translations`,
 `xwiki-contrib-release-blog-post`, `xwiki-fix-sonarqube-issue`, `xwiki-backport`,
-`xwiki-backport-testneeded`, `xwiki-jira`, `xwiki-review`.
+`xwiki-backport-testneeded`, `xwiki-jira`, `xwiki-openproject`, `xwiki-release-test-triage`,
+`xwiki-review`.
 
 ## How to extend the OKF (EXTEND)
 

@@ -83,7 +83,8 @@ ln -s "$XWIKI_LLM_HOME/xwiki/opencode/plugins/xwiki-line-endings.js" ~/.config/o
 ```
 
 > **Note — no git-remote scoping in opencode.** In Claude Code the org conventions are injected only
-> inside `xwiki/*` / `xwiki-contrib/*` repos (a remote-scoped `SessionStart` hook). opencode has no
+> inside `xwiki/*` / `xwiki-contrib/*` repos — and any org listed in `XWIKI_LLM_ORGS` — via a
+> remote-scoped `SessionStart` hook. opencode has no
 > equivalent hook, so with the *global* config the conventions load in every repo. Use the
 > *per-project* config if you need them scoped to XWiki repos only.
 
@@ -92,19 +93,24 @@ ln -s "$XWIKI_LLM_HOME/xwiki/opencode/plugins/xwiki-line-endings.js" ~/.config/o
 - **Org-wide conventions** (`xwiki/instructions/xwiki-org.md`) — the shared "CLAUDE.md for all
   repos". In Claude Code and Kimi Code it is injected into every session by a `SessionStart` hook
   (`xwiki/scripts/inject-org-instructions.mjs`), **scoped by git remote** so it only applies inside
-  `xwiki/*` and `xwiki-contrib/*` repos (never in personal projects). The hook is written in Node
+  `xwiki/*` and `xwiki-contrib/*` repos (never in personal projects) — plus any other GitHub org you
+  name in `XWIKI_LLM_ORGS`, for a company or fork following the same conventions. The hook is written in Node
   (which ships with Claude Code), so it works on Windows, macOS and Linux without a bash or `jq`
   dependency. In opencode it is loaded via the `instructions` config entry (not remote-scoped — see
   the opencode install note above).
 - **A single work directory** — every file a task needs but the repo must not hold (plan and
   handoff files, extracted source, drafts, notes, screenshots) goes under one root instead of being
-  scattered over the repo, the system temp directory and your home directory. The default is
-  `~/.xwiki-llm/work`, overridable with `XWIKI_LLM_WORK`; each piece of work gets its own
+  scattered over the repo, the system temp directory and your home directory. That root sits in
+  your platform's state directory, overridable with `XWIKI_LLM_WORK` (see the environment-variable
+  table below for the exact defaults); each piece of work gets its own
   `<work>/<repo>/<YYYY-MM-DD>-<slug>/` directory, so it is findable later and removable in one
   command. Nothing is created up front — a session that writes no work file leaves no trace — and
   the `SessionStart` hook appends the resolved absolute path to the injected conventions so the
   model does not have to guess it. Files that only matter until the end of the current session stay
-  in the host's own session scratch directory.
+  in the host's own session scratch directory. Up to version 1.5.0 the default root was
+  `~/.xwiki-llm/work` on every OS; if you have files there, move them to the new root (while
+  anything remains, each session starts with a reminder to do so) — or point `XWIKI_LLM_WORK` at the
+  old path to keep it.
 - **Docker IT slot limiter** (`xwiki/scripts/xwiki-it-slot.mjs`) — a wrapper that caps how many
   XWiki functional-test runs (`-Pdocker,integration-tests`) execute at once on one machine, two by
   default (`--max N`, or `XWIKI_LLM_IT_SLOTS`). Such a run holds a servlet engine, a browser
@@ -156,10 +162,12 @@ ln -s "$XWIKI_LLM_HOME/xwiki/opencode/plugins/xwiki-line-endings.js" ~/.config/o
   - `xwiki-review` — multi-angle XWiki-aware review of a PR, a commit range or the working tree: one
     specialist reviewer per angle (conventions, architecture, backward compatibility, defensive
     conventions, performance, tests, accessibility, i18n/UX, documentation, data & migration, spec
-    conformance), each finding confidence-scored and dropped below the bar before anything is posted.
+    conformance), each finding independently challenged and dropped unless it survives, before
+    anything is posted.
     **Explicit invocation only** — it is not used for a plain "review this" (that stays a normal,
     cheap review); ask for it by name (`/xwiki-review`) when you want the expensive full pass.
   - `xwiki-jira` — view/search/create/update/transition issues on jira.xwiki.org (jira-cli or REST).
+  - `xwiki-openproject` — search/view/create/update/comment on work packages in op.xwiki.org (OpenProject) over REST API v3, with the `/form` dry run before every write.
   - `xwiki-test-guidelines` — testing best practices and the XWiki test frameworks.
   - `xwiki-javadoc` — write clear, useful Javadoc following the XWiki Java Code Style and Oracle conventions.
   - `xwiki-convert-tests` — convert unit tests to JUnit5/Mockito.
@@ -167,6 +175,7 @@ ln -s "$XWIKI_LLM_HOME/xwiki/opencode/plugins/xwiki-line-endings.js" ~/.config/o
   - `xwiki-increase-test-coverage` — raise and lock in a module's unit-test coverage (JaCoCo instruction ratio).
   - `xwiki-legacy` — move a deprecated public API out of a main module into its `-legacy` companion (migrate callers, remove, re-add via a plain class or an AspectJ aspect, Revapi ignore).
   - `xwiki-fix-flickering-docker-test` — fix a flickering Docker-based functional test.
+  - `xwiki-release-test-triage` — before a release, triage a branch's failing tests on ci.xwiki.org: rated across environments and recent builds, known flickers vs. unknown ones vs. real breakages, and whether each breakage is already fixed on another branch.
   - `xwiki-deploy-extension` — deploy a XAR/JAR extension to a running XWiki instance.
   - `xwiki-rest-api` — read/write a running XWiki over REST: get page content & xobjects, update pages & object properties, create pages (with xobjects), Solr search.
   - `xwiki-xar-pages` — edit extension wiki pages (XAR XML): the `xar:format` / `xar:verify` conventions.
@@ -184,7 +193,8 @@ ln -s "$XWIKI_LLM_HOME/xwiki/opencode/plugins/xwiki-line-endings.js" ~/.config/o
 | Variable                | Used by   | Notes                                              |
 |-------------------------|-----------|----------------------------------------------------|
 | `XWIKI_LLM_HOME`        | opencode  | Absolute path to your `xwiki-dev-llm` checkout. **opencode only** (Claude Code and Kimi Code resolve paths themselves). |
-| `XWIKI_LLM_WORK`        | all hosts | Absolute path to the work directory for plans, handoffs, drafts and other cross-session state. Optional — defaults to `~/.xwiki-llm/work`. |
+| `XWIKI_LLM_ORGS`        | Claude Code, Kimi Code | Extra GitHub orgs, comma- or whitespace-separated (e.g. `acme-corp,acme-labs`), whose repos should also get the org conventions injected. Optional — `xwiki` and `xwiki-contrib` always match. Not used by opencode, which has no remote scoping. |
+| `XWIKI_LLM_WORK`        | all hosts | Absolute path to the work directory for plans, handoffs, drafts and other cross-session state. Optional — defaults to `$XDG_STATE_HOME/xwiki-llm/work` on Linux/macOS, falling back to `~/.local/state/xwiki-llm/work` when `XDG_STATE_HOME` is unset (as it is by default on macOS); and to `%LOCALAPPDATA%\xwiki-llm\work` on Windows, falling back to `%USERPROFILE%\AppData\Local\xwiki-llm\work` when `LOCALAPPDATA` is unset. |
 | `SONARQUBE_TOKEN`       | sonarqube | Your personal SonarCloud token (same for all repos). |
 | `SONARQUBE_PROJECT_KEY` | sonarqube | The SonarCloud project key — **differs per repo**. Optional: leave it unset in repos that have no SonarCloud project. |
 | `DEVELOCITY_MCP_ACCESS_KEY` | develocity | Your community.develocity.cloud access key, **bare** (no `community.develocity.cloud=` prefix). Optional — without it the build-scan MCP is not loaded. See "Develocity access" below. |

@@ -195,7 +195,11 @@ usually does, so the version is copied, never invented. Moving it is the whole f
 ```
 
 **Drop** when the version is not written down: no Javadoc, no `@deprecated` tag, or a tag naming no
-version (`@deprecated use {@link X} instead`). Never guess one.
+version (`@deprecated use {@link X} instead`). Never guess one — but that is a property of an element
+declaring its **own** API. **An `@Override` inherits the version**: index every
+`@Deprecated(since = "X")` in the repos by `(method name, parameter count)`, look the override up, and
+copy. Verify the class implements the interface the match came from; drop when the parent is not
+deprecated at all.
 
 Three mechanics:
 
@@ -205,6 +209,23 @@ Three mechanics:
   holds malformed versions (`4.4MA`, `5.2M`, `14.0CR1`) whose numeric prefix otherwise matches, which
   silently truncates the version and orphans the rest of the token in the tag. Those sites should drop.
 - Adding the attribute is not an API break — `revapi:check` passes.
+
+## S6213 — an identifier matching a restricted identifier
+
+**Only the `"Rename this variable"` half is fixable**; `"Rename this method"` renames published API
+and stays denylisted (see [[index]]). The message alone is the classifier — no source read needed.
+
+A variable or parameter rename changes no signature and breaks no caller, so the compiler is the whole
+verification, exactly as for [[dead-code-rules]]' `S1172` `private` subset. Two mechanics:
+
+- Substitute `(?<![\w$.])record(?![\w$])(?!\s*\()` — the `.` spares `x.record(…)` and the trailing
+  lookahead spares the method declarations you are deliberately not renaming.
+- Run it per line, **skipping comment lines**, or the rename mangles English prose ("adds a new record
+  to the history"). The one comment form to rewrite is the `@param` TAG, which must follow its
+  parameter.
+
+Ship it separately from a mechanical batch: a parameter name is visible in Javadoc and IDE
+completion, so it is a taste call rather than a correctness one.
 
 ## Related
 
