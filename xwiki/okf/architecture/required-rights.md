@@ -56,14 +56,21 @@ elements by name and does not gate parsing on the declared version, so a page le
 enforces, and passes `xar:format` and `xar:verify` while claiming a format version that does not
 contain the tag it uses. Nothing warns; it has to be got right by hand.
 
-## Enforcement reaches further than the page — and less far than it looks
+## Enforcement is per-document, and reaches further only through a script save
 
-- **Every document an enforcing page's script saves is forced to enforce too**, capped at the rights
-  that page declares (`com.xpn.xwiki.api.Document.checkRequiredRightsForSaving`). A page that creates
-  content from a template therefore imposes its own ceiling on the created page, so a template whose
-  content needs Script right stops working once the creating page enforces less than that.
-- It does **not** unconditionally cap an include chain: `{{include}}`'s `author="target"` executes the
-  included page's content with that page's own author instead of the including page's.
+- Required rights are read for **one** document, the current `sdoc`
+  (`DefaultContextualAuthorizationManager#checkPreAccess` → `DefaultDocumentAuthorizationManager`).
+  Nothing intersects one page's declaration with another's, so an enforcing page **never caps** what
+  a page it `{{include}}`s or a wiki macro it calls may do: both run with their own page as `sdoc`.
+  A page enforcing with an empty set can include a page whose Velocity still executes.
+- What does reach further is a **script** save: `com.xpn.xwiki.api.Document#save`
+  (`checkRequiredRightsForSaving`) forces the saved document to enforce too, capped at the saving
+  page's declared rights, when the context author lacks Programming Right. A page creating content
+  from a template thus imposes its ceiling on the created page. `XWiki#saveDocument`, which a Java
+  component calls, does not — moving a save into a component removes the propagation.
+- A **title** written in Velocity is evaluated only when the document's *content author* holds Script
+  right on it (`AbstractDocumentTitleDisplayer#displayTitle`), which enforcing with an empty set
+  denies: the title is then displayed as raw source.
 
 ## Reading the enforced rights back in a test
 

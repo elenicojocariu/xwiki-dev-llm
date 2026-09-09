@@ -92,8 +92,8 @@ role holders): the relevant file gives a `verify:` recipe instead (read `pom.xml
 OKF map — topic files under `okf/`; **`okf/index.md` describes each one**, read it to choose:
 
 - `okf/conventions/` — `code-style`, `code-comments`, `commit-messages`, `versioning`,
-  `backward-compatibility`, `security`, `performance`, `logging`, `naming`, `frontend`,
-  `server-side-rendering`,
+  `backward-compatibility`, `security`, `script-services`, `performance`, `logging`, `naming`,
+  `frontend`, `server-side-rendering`,
   `translations`, `dependencies`; and the xwiki.org documentation rules — `documentation`,
   `documentation-migration`, `documentation-mechanics`, `page-deletion` — applied by
   `xwiki-doc-writing` / `xwiki-doc-convert`.
