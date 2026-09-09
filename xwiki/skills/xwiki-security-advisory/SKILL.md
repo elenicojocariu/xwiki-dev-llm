@@ -1,6 +1,6 @@
 ---
 name: xwiki-security-advisory
-description: Draft the content of a GitHub Security Advisory for an XWiki vulnerability, following the official template published on the XWiki Security Policy page (dev.xwiki.org). Use when asked to write/prepare/draft a security advisory, given a security-restricted JIRA issue key (e.g. XWIKI-24717) that needs a GHSA draft, or asked to fill in Impact/CVSS/Patches/Workarounds/References for a vulnerability. Always re-fetches the live template and the live JIRA issue rather than reusing a cached copy of the template or the wording of a past advisory. For the disclosure rules (obfuscated commits, restricted JIRA issues, the private-fork merge recipe) use xwiki-knowledge (okf/processes/security-policy.md); for reading/updating the JIRA issue itself use xwiki-jira; for the eventual fix's PR/commit conventions use xwiki-pull-request.
+description: Draft the content of a GitHub Security Advisory for an XWiki vulnerability, following the official template published on the XWiki Security Policy page (dev.xwiki.org). Use when asked to write/prepare/draft a security advisory, given a security-restricted JIRA issue key (e.g. XWIKI-1234) that needs a GHSA draft, or asked to fill in Impact/CVSS/Patches/Workarounds/References for a vulnerability. Always re-fetches the live template and the live JIRA issue rather than reusing a cached copy of the template or the wording of a past advisory. For the disclosure rules (obfuscated commits, restricted JIRA issues, the private-fork merge recipe) use xwiki-knowledge (okf/processes/security-policy.md); for reading/updating the JIRA issue itself use xwiki-jira; for the eventual fix's PR/commit conventions use xwiki-pull-request.
 ---
 
 # XWiki security advisory drafting
@@ -44,8 +44,14 @@ From the response's `fields`, collect:
   already exists — useful for the Patches/References sections once a fix lands (remember: the fix
   commit message will be **obfuscated**, per [[security-policy]], so don't expect the JIRA key in it).
 
-**If the fetch 404s**, that means the account behind `JIRA_API_TOKEN` cannot see a restricted issue
-at that key — not that the key doesn't exist. Tell the user rather than assuming it's invalid.
+**If the fetch fails** — no `JIRA_API_TOKEN` set, a network/auth error, or a 404 (which for a
+restricted issue usually means the account behind the token isn't in the security group, not that
+the key is wrong) — say so, then **ask the user directly** for whatever Step 3's mapping table needs
+instead of guessing or stalling on the fetch. Ask specifically for: the title/summary; the
+vulnerability description (impact, affected component, how to reproduce); affected version(s) and
+fix version(s) if already decided; the reporter's name and whether they've agreed to be credited; and
+a CVSS vector/score if one has already been agreed on. Draft with whatever they provide, and mark
+anything still missing as an explicit `[TBD]` in the draft rather than inventing a value for it.
 
 ## Step 2 — Fetch the live advisory template and scoring guidance
 
@@ -83,8 +89,9 @@ curl -s -G "https://dev.xwiki.org/xwiki/rest/wikis/dev/query" \
 
 ## Step 3 — Draft the advisory
 
-Fill the template using the mapping below; leave nothing as a placeholder without flagging it to the
-user:
+Fill the template using the mapping below — from the JIRA fields fetched in Step 1, or from the
+user's direct answers when that fetch failed. Leave nothing as a silent placeholder: flag anything
+still missing to the user instead of guessing it.
 
 | Advisory field | Source |
 |---|---|
@@ -130,7 +137,9 @@ assumed. When the user asks for that step:
 
 ## Troubleshooting
 
-- **JIRA fetch 404s** → account can't see this restricted issue (see Step 1), not a bad key.
+- **JIRA fetch fails** (missing token, network/auth error, or 404) → don't block: ask the user
+  directly for the missing fields (see Step 1) and draft from their answers. A 404 on a restricted
+  issue usually means the account can't see it, not that the key is wrong.
 - **No CVSS vector found in `customfield_*`** → it may not have been scored yet; compute it with the
   user using the Step 2 guidance and the official calculator (https://www.first.org/cvss/v4.0/)
   rather than guessing a score.
