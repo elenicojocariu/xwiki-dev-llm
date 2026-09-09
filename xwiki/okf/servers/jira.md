@@ -1,9 +1,11 @@
 ---
 title: JIRA (jira.xwiki.org) — access and issue-field conventions
 stability: durable
-summary: How to reach the self-hosted XWiki JIRA (jira-cli or REST) and the durable conventions for
-  an issue's Component, Affects Version/s and Fix Version/s. Version values themselves are volatile.
+summary: How to reach the self-hosted XWiki JIRA (jira-cli or REST), when an issue should be filed at
+  all, and the durable conventions for an issue's Component, Affects Version/s and Fix Version/s.
+  Version values themselves are volatile.
 sources:
+  - https://dev.xwiki.org/xwiki/bin/view/Community/IssueTracker/JIRA/
   - https://dev.xwiki.org/xwiki/bin/view/Community/VersioningAndReleasePractices/
   - https://dev.xwiki.org/xwiki/bin/view/Community/SupportStrategy/
 ---
@@ -29,6 +31,21 @@ Each repo has its own key: `XWIKI` (Platform), `XCOMMONS` (Commons), `XRENDERING
 `xwiki`-org repos have their own keys too (e.g. `XDOCKER` for the `xwiki/xwiki-docker` image); and
 each xwiki-contrib extension has a per-extension key. Always reference an issue by its key
 (`XWIKI-12345`); the commit that fixes it carries that key as its prefix (see [[commit-messages]]).
+
+## Whether to file an issue at all
+
+**A defect in code that the version under development introduced does not get its own issue** —
+reopen the issue that introduced it and fix it under that key (an already-merged PR does not change
+this; a second PR on the same key is the expected shape). Filing a new one splits one unreleased
+change across two release-note entries and leaves an "Affects Version" that names a version nobody
+can have hit the bug in. **That impossible Affects Version is the tell**: if the only honest value is
+the unreleased dev version, you are in this case — the exception being a genuinely pre-existing defect
+that the new work merely brought to light, which is its own issue with an Affects Version naming a
+*released* version.
+
+A change with no effect on users or extension developers (refactoring, build-only work) needs no
+issue; when one is filed anyway it takes the **`Development Issue Only`** component, which is excluded
+from the release notes.
 
 ## Issue-field conventions (creating a Bug)
 

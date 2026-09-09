@@ -210,7 +210,9 @@ Applied by `xwiki-fix-sonarqube-issue`, which owns the *procedure*.
   the `extensions` subwiki id) and the `~/.xwiki-credentials` convention (never printed, only
   sourced).
 - **jira** — accessing jira.xwiki.org (jira-cli or REST), the before/after images a visibly changing
-  fix owes its issue whether or not it has a PR, the durable issue-field conventions
+  fix owes its issue whether or not it has a PR, **whether an issue should be filed at all** (a defect
+  in code the unreleased dev version introduced reopens that issue instead — the tell is an Affects
+  Version nobody could have hit the bug in), the durable issue-field conventions
   (Component, Affects Version = oldest affected/else last LTS, Fix Version, and the `flickering`
   label + "Flickering Test" field that let a CI failure be joined to its issue); values are volatile;
   resolving/closing (Fixed vs. Cannot Reproduce for already-covered issues, assign to yourself);
