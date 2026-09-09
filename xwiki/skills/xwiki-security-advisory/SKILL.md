@@ -116,7 +116,7 @@ still missing to the user instead of guessing it.
 | Title | JIRA `summary` |
 | Impact prose | JIRA `description`'s explanation/PoC, rewritten as impact + affected versions, in your own words — not a verbatim copy-paste of internal notes |
 | CVSS table | The vector found in Step 1, valued per the Step 2 scoring guidance, worded per the Step 3 precedent for the *comment* column |
-| Affected package(s) / vulnerable version range | The module(s) touched, and `versions` (Affects) → GitHub's version-range syntax (see the template's own note on OSV range syntax gotchas) |
+| Affected package(s) / vulnerable version range | The module(s) touched, and `versions` (Affects) → GitHub's version-range syntax — see "Affected products (packages) and version ranges" below |
 | Patches | `fixVersions` if the fix isn't released yet ("will be fixed in…"); the actual released versions + patch commit once it is |
 | Workarounds | From the JIRA description if a mitigation is mentioned, else "no known workaround other than upgrading" |
 | References | The JIRA issue URL, plus the fix commit's SHA/URL — use an explicit placeholder such as `[commit SHA once merged]` until the fix actually lands, matching the Patches row below |
@@ -126,6 +126,36 @@ CWE: pick the closest match from https://cwe.mitre.org/data/index.html — this 
 judgment call, not something to default without reasoning about the actual flaw (e.g. broken access
 control against a user-controlled identifier is usually CWE-639, missing authorization generally is
 CWE-862, XSS is CWE-79, etc.).
+
+### Affected products (packages) and version ranges
+
+Follow GitHub's guide
+(https://docs.github.com/en/enterprise-cloud@latest/code-security/tutorials/fix-reported-vulnerabilities/write-security-advisories)
+together with the pattern every already-published XWiki advisory uses (check a couple with `gh api
+repos/<owner>/<repo>/security-advisories/<ghsa_id> --jq '.vulnerabilities'`, same as in Step 3):
+
+- **Ecosystem:** `maven`. **Package name:** the leaf module's `groupId:artifactId` that actually
+  carries the vulnerable code — never an umbrella/parent artifact. Examples from past advisories:
+  `org.xwiki.platform:xwiki-platform-oldcore`, `org.xwiki.platform:xwiki-platform-office-viewer`,
+  `org.xwiki.platform:xwiki-platform-repository-rest-server`. More than one module affected → one
+  **Affected product** entry per module, not a single combined one.
+- **Vulnerable version range:** XWiki advisories are consistently a single open-ended lower bound,
+  `>= <oldest known affected version>`, with **no upper bound** — the flaw is present in every
+  release up to the fix. Only add an upper bound if the vulnerable code path was independently
+  removed or replaced before the security fix landed.
+- **Patched version(s):** list **every maintained branch's fix version** on the same entry — XWiki
+  backports a security fix to all currently supported branches at once, so one Affected product
+  typically carries several patched versions (one per branch), not just the newest.
+- **Version string format:** the dashed dev-version notation, e.g. `18.7.0-rc-1`, never the
+  JIRA/`@since`-style `18.7.0RC1` — GitHub's comparator treats a hyphenated suffix as a prerelease
+  (`2.0.0-a` sorts *before* `2.0.0`), so getting this wrong silently breaks the range.
+- **Operator syntax:** a space between the operator and the version (`>= 1.0.0`, not `>=1.0.0`); a
+  comma **and** a space between the two bounds of one range (`>= 1.0.0, <= 2.0.0`); `<=` when the
+  named version is itself the patched one, `<` when it's the first *unpatched* one — this is exactly
+  the OSV exclusive-upper-bound trap the live template already flags in Step 2 (you cannot write
+  `< 17.10.9` unless `17.10.9` is also a patched version — write `<= 17.10.8` instead). A single
+  field cannot express a disjoint range (e.g. two separate vulnerable bands): use two Affected
+  product entries for the same package instead of trying to combine them.
 
 ## Step 5 — Save the draft
 
