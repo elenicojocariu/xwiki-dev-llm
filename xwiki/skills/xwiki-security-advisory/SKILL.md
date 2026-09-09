@@ -46,7 +46,7 @@ From the response's `fields`, collect:
 
 **If the fetch fails** — no `JIRA_API_TOKEN` set, a network/auth error, or a 404 (which for a
 restricted issue usually means the account behind the token isn't in the security group, not that
-the key is wrong) — say so, then **ask the user directly** for whatever Step 3's mapping table needs
+the key is wrong) — say so, then **ask the user directly** for whatever Step 4's mapping table needs
 instead of guessing or stalling on the fetch. Ask specifically for: the title/summary; the
 vulnerability description (impact, affected component, how to reproduce); affected version(s) and
 fix version(s) if already decided; the reporter's name and whether they've agreed to be credited; and
@@ -87,7 +87,25 @@ curl -s -G "https://dev.xwiki.org/xwiki/rest/wikis/dev/query" \
   --data-urlencode "q=title:'XWiki Security Policy'" --data-urlencode "type=solr"
 ```
 
-## Step 3 — Draft the advisory
+## Step 3 — Look at published advisories for CVSS comment wording
+
+Step 2's guidance gives the *policy* behind each metric, but a good one-line comment for a CVSS table
+row is a matter of precedent, not policy. Pull a few **already-published** XWiki advisories — never a
+still-private/draft one — whose vector is close to the one at hand, and read how they worded that
+row's comment:
+
+```bash
+gh api repos/<owner>/<repo>/security-advisories --jq \
+  '.[] | select(.state=="published") | {ghsa_id, summary, cvss: .cvss.vector_string}'
+gh api repos/<owner>/<repo>/security-advisories/<ghsa_id> --jq '.description'
+```
+
+Match the **register** — tight and mechanism-specific, one sentence per row (e.g. "Reachable by a
+guest, who does not need an account." rather than a generic "Low privileges needed") — not the
+literal wording. This is wording inspiration only: the advisory's **section structure** still comes
+exclusively from the live template fetched in Step 2, never from a past advisory's layout.
+
+## Step 4 — Draft the advisory
 
 Fill the template using the mapping below — from the JIRA fields fetched in Step 1, or from the
 user's direct answers when that fetch failed. Leave nothing as a silent placeholder: flag anything
@@ -97,11 +115,11 @@ still missing to the user instead of guessing it.
 |---|---|
 | Title | JIRA `summary` |
 | Impact prose | JIRA `description`'s explanation/PoC, rewritten as impact + affected versions, in your own words — not a verbatim copy-paste of internal notes |
-| CVSS table | The vector found in Step 1 + the Step 2 scoring guidance for the *comment* column |
+| CVSS table | The vector found in Step 1, valued per the Step 2 scoring guidance, worded per the Step 3 precedent for the *comment* column |
 | Affected package(s) / vulnerable version range | The module(s) touched, and `versions` (Affects) → GitHub's version-range syntax (see the template's own note on OSV range syntax gotchas) |
 | Patches | `fixVersions` if the fix isn't released yet ("will be fixed in…"); the actual released versions + patch commit once it is |
 | Workarounds | From the JIRA description if a mitigation is mentioned, else "no known workaround other than upgrading" |
-| References | The JIRA issue URL, plus the fix commit URL once it exists |
+| References | The JIRA issue URL, plus the fix commit's SHA/URL — use an explicit placeholder such as `[commit SHA once merged]` until the fix actually lands, matching the Patches row below |
 | Credit / Attribution | `reporter`, or a named security researcher from the description — **ask the user to confirm the reporter consents to be credited** before naming them, and note that a non-committer reporter needs adding as a collaborator on the draft |
 
 CWE: pick the closest match from https://cwe.mitre.org/data/index.html — this is a per-vulnerability
@@ -109,14 +127,14 @@ judgment call, not something to default without reasoning about the actual flaw 
 control against a user-controlled identifier is usually CWE-639, missing authorization generally is
 CWE-862, XSS is CWE-79, etc.).
 
-## Step 4 — Save the draft
+## Step 5 — Save the draft
 
 Write the full draft — both the metadata (title, CVSS vector/score, CWE, affected versions, credits)
 and the markdown body for the GitHub advisory's description field — to a file under the work
 directory, e.g. `<work>/<repo>/<date>-<JIRA-KEY>-security-advisory/advisory-draft.md`, headed with a
 **CONFIDENTIAL, do not commit or post publicly** banner. Show it to the user in the conversation too.
 
-## Step 5 — Creating the real draft advisory on GitHub (only when asked)
+## Step 6 — Creating the real draft advisory on GitHub (only when asked)
 
 Drafting the text is safe to do proactively; actually creating the GitHub Security Advisory is a
 repo-visible action (visible to all org owners immediately) and must be explicitly requested, not
@@ -143,5 +161,6 @@ assumed. When the user asks for that step:
 - **No CVSS vector found in `customfield_*`** → it may not have been scored yet; compute it with the
   user using the Step 2 guidance and the official calculator (https://www.first.org/cvss/v4.0/)
   rather than guessing a score.
-- **Fix not merged yet** → say so in the Patches section ("will be fixed in …") instead of inventing
-  a patch commit; come back and fill in the real commit URL once it lands.
+- **Fix not merged yet** → say so in the Patches section ("will be fixed in …") and put the
+  `[commit SHA once merged]` placeholder in References, instead of inventing a commit; come back and
+  fill in the real SHA/URL once it lands.
