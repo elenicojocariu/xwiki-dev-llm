@@ -78,6 +78,30 @@ GET https://www.xwiki.org/xwiki/rest/wikis/xwiki/releasenotes?product=XWiki
 Match on the `version` field (the long dashed form). Missing is the normal case for a cycle in
 progress — see §6.2.
 
+**A bugfix release stores no entries of its own.** For an `X.Y.Z` with `Z > 0` the release-note page
+renders `{{jira}}` — the list of issues fixed, queried from JIRA — *instead of*
+`{{releasenotechanges/}}` (the page branches on this itself, and `okf/processes/release-notes.md`
+says so). An entry posted against that version is stored and never rendered, so **never post one
+there**. Say this at triage rather than discovering it afterwards.
+
+**That is a fact about the page, not about the issues.** A bugfix release is mostly bug fixes, which
+§4 sends to `N/A` anyway — but **improvements do get slipped into one when they are what
+fixes the bug, and an improvement needs its entry here as much as anywhere**. Every issue in one
+is also fixed forward, so its Fix Version list names the `.0` or RC version too, and *that* is where
+its entry goes and renders. The bugfix note is not left silent: its `{{jira}}` list covers the issue
+by summary, and the feature note carries the prose.
+
+So the triage row for a bugfix sweep carries the RC alongside the bugfix version, and its release
+status with it — an entry against an **already-released** note is a retroactive edit and needs the
+developer's say-so.
+
+`verify:` both halves, which are cheap and settle any argument — `GET …/releasenotes/XWiki/<a
+bugfix version>/changes` returns an empty list for every bugfix release; and the improvements and
+new features shipped in recent bugfix releases (`issuetype in (Improvement, "New Feature") AND
+fixVersion in (…)`) mostly hold an entry URL, every one of them pointing at the feature release's
+note. **A field pointing at the bugfix note's `#HNewandNoteworthy…` anchor is not an entry** —
+it is a link into the JIRA list, and `okf/servers/jira.md` forbids anchors in the field regardless.
+
 **The clones.** `xwiki-platform`, `xwiki-commons` and `xwiki-rendering` are needed to read diffs.
 Discover them as siblings of the working directory; ask once if any is absent. **Never hardcode a
 path** — this plugin ships to other developers' machines. Record what was found in the plan file.
@@ -151,16 +175,42 @@ Candidate target pages are looked up by **Solr search over the four wikis** (`ww
 `dev`, `rendering`) via REST — see `xwiki-rest-api` — and the best candidate is carried into the
 triage table for approval.
 
+**Search the identifiers the diff touches, not only the subject.** Searching the subject answers
+"is there a page about this feature", which for a fix is usually "no" — and that "no" is not the
+documentation verdict. The verdict turns on the sharper question: **does any page make a claim this
+change makes wrong?** A page about something else entirely can carry one incidental sentence about
+the code being changed, and a subject search will never surface it. So search both: the subject, and
+the concrete strings in the diff — the class or property name, the configuration key, the SQL or
+command shown to readers, the event name, the macro name. Then **read the candidate and check the
+claim**, rather than judging from the search hit's title.
+
 ## 4. Triage
 
 Default by issue type, **overridden by the evidence**. The two verdicts are independent — "no
 documentation page fits this" does not cancel the release-note entry.
 
 ```
-Bug           → N/A , N/A     unless user-visible behaviour or public API changed → RN entry
+Bug           → N/A , N/A     unless the change is noteworthy (below) → RN entry
 Improvement   → doc? , RN
 New Feature   → doc  , RN
 Task          → N/A , N/A     unless it changes a dev practice → dev.xwiki.org doc, RN N/A
+```
+
+**The test is noteworthiness, not visibility.** An entry is for a change a reader deciding whether
+to upgrade wants to know about; documentation is for a change that alters what a page says. **A pure
+bug fix that changes nothing documented is not worth an entry** — it merely restores the behaviour
+the documentation already describes, and the release note lists it among the issues fixed anyway.
+"User-visible behaviour changed" is too weak a trigger: nearly every bug fix changes user-visible
+behaviour, that being what made it a bug.
+
+`verify:` the bar the project actually applies, before arguing a Bug over it — of the fixed issues
+of a cycle carrying a non-empty `Documentation in Release Notes`, count how few hold a URL rather
+than `N/A`, and how few of those are Bugs rather than Improvement / New Feature:
+
+```
+GET /rest/api/2/search?jql=project in (XWIKI,XCOMMONS,XRENDERING)
+    AND "Documentation in Release Notes" is not EMPTY AND resolution = Fixed
+    AND fixVersion in ("<the RCs of a recent cycle>")&fields=key,issuetype,customfield_10273
 ```
 
 **Grouping** is proposed here, both directions, and approved by the developer:
