@@ -3,8 +3,7 @@
 These conventions apply to every repository in the `xwiki` and `xwiki-contrib` GitHub
 organizations. They are injected automatically at the start of each session by the `xwiki`
 plugin (scoped by git remote). Repo-specific `CLAUDE.md` files add to (and may override) what
-follows. This file is deliberately lean; deeper detail lives in the skills and the OKF (see map
-below).
+follows.
 
 ## Project facts
 
@@ -107,7 +106,7 @@ OKF map — topic files under `okf/`; **`okf/index.md` describes each one**, rea
   `xwiki-fix-sonarqube-issue` skill, which owns the procedure.
 - `okf/servers/` — `index` (JIRA, CI, Nexus, SonarCloud, forum: how to reach each, and writing over
   REST), `jira`, `jenkins`.
-- `okf/processes/` — `release`, `security-policy`, `module-lifecycle`.
+- `okf/processes/` — `release`, `release-notes`, `security-policy`, `module-lifecycle`.
 - `okf/decisions/` — ADRs (the *why* behind durable architectural choices).
 
 **Capturing learnings:** when a task relies on or fetches a durable, generic XWiki fact whose topic

@@ -1,6 +1,6 @@
 ---
 name: xwiki-doc-writing
-description: Write, update or review a page of XWiki documentation on xwiki.org, following the XWiki Documentation Guide (Diataxis type & audience, titles/page-names, page-structure fields, style, location, versioning). Use when authoring a NEW documentation page, updating an existing one, or reviewing a page for quality. Also use before DELETING any page on xwiki.org — deletion requires fixing the page's backlinks first. New documentation lives under https://www.xwiki.org/xwiki/bin/view/documentation/. To CONVERT old documentation (the Documentation space or the Extensions wiki) into the new tree, use xwiki-doc-convert instead.
+description: Write, update or review a page of XWiki documentation on xwiki.org, following the XWiki Documentation Guide (Diataxis type & audience, titles/page-names, page-structure fields, style, location, versioning). Use when authoring a NEW documentation page, updating an existing one, or reviewing a page for quality. Also use before DELETING any page on xwiki.org — deletion requires fixing the page's backlinks first. New documentation lives under https://www.xwiki.org/xwiki/bin/view/documentation/. To CONVERT old documentation (the Documentation space or the Extensions wiki) into the new tree, use xwiki-doc-convert instead; to sweep the fixed issues of a release and document what each one needs, use xwiki-release-documentation (which delegates the prose back to this skill).
 ---
 
 # Writing, updating and reviewing XWiki documentation
