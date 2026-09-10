@@ -63,6 +63,8 @@ The procedure lives in the `xwiki-rest-api` skill; the durable gotchas are:
   request header**; every REST response returns the current token in that same header (so any GET
   yields one). Retry once on `403 "Invalid or missing form token."` (it can rotate on server
   restart). An XML page `PUT` is exempt; form-encoded object `POST`/property writes are not.
+- **An attachment `PUT` needs an explicit `Content-Type: application/octet-stream`.** Without it curl
+  sends the body form-urlencoded and the wiki answers **400**.
 - **Wiki ids differ:** www.xwiki.org's main wiki is `xwiki` (`/rest/wikis/xwiki/…`);
   **extensions.xwiki.org is a subwiki named `extensions`** (`/rest/wikis/extensions/…`), not `xwiki`.
 - **Credentials convention: `~/.xwiki-credentials`** — the developer's xwiki.org write credentials, two
