@@ -38,6 +38,33 @@ issue-field conventions in [[../servers/jira]]. What is specific to release note
 - The URL the second one wants is derived from what the REST endpoint returns, not built by hand —
   see **`reference` → the URL a JIRA field wants** below.
 
+## Extensions not bundled in XWiki Standard
+
+The Release Notes Application installed on xwiki.org holds the release notes of **XWiki Standard**
+(product `XWiki`) and of the few other products that opted into it (`Cristal`, `ActivityPub
+Application`). An xwiki-contrib extension normally does **not** use it.
+
+Its release notes are the **Repository application's** per-version ones on extensions.xwiki.org: the
+`notes` property (pretty name "Release Notes") of the `ExtensionCode.ExtensionVersionClass` object on
+the version page `Extension.<Name>.Versions.<version>.WebHome`, rendered in the Versions section of
+the extension page (`https://extensions.xwiki.org/xwiki/bin/view/Extension/<Name>/#HVersions`). In
+practice that property holds a `{{jira}}` macro over the fix version, so the release note *is* the
+list of issues carrying that Fix Version — the shape a core *bugfix* release note has, for every
+release rather than only the bugfix ones.
+
+So for a fixed issue of such an extension:
+
+- **`Documentation in Release Notes` is `N/A`**, and that is not an oversight: there is no per-issue
+  entry to point at, the issue being in the release note by virtue of its Fix Version.
+- **Nothing is owed until the version is released.** The version page is created by the Repository
+  application from the Maven repository once the artifacts are deployed, and the release itself is
+  announced by a blog post (the `xwiki-contrib-release-blog-post` skill).
+
+`verify:` read a version page's `notes` — under
+`/xwiki/rest/wikis/extensions/spaces/Extension/spaces/<Name>/spaces/Versions/spaces/<version>`,
+`GET pages/WebHome/objects/ExtensionCode.ExtensionVersionClass/0`. The version page is hidden, so it
+is absent from a REST `pages` listing.
+
 ## How a release note is stored
 
 The Release Notes Application (`xwiki-contrib/application-releasenotes`, installed on xwiki.org)
@@ -118,10 +145,14 @@ Behaviour worth knowing before writing a client:
   Filters: `audience`, `category`, `importance` (comma-separated, names or numbers),
   `containsScreenshots`.
 - `POST …/changes` on a version with no release note answers `404`.
-- **There is no update endpoint** — the resources carry `GET` and `POST` only. A change is written
-  once; anything set afterwards (notably `screenshots`, whose names must already be attached to a
-  page that does not exist until the POST allocates it) goes through the generic XWiki object REST
-  API against the page in `reference`. Never pre-create an entry page to work around this: a page
+- **In 2.7 there is no update endpoint** — the resources carry `GET` and `POST` only, so a change is
+  written once and anything set afterwards (notably `screenshots`, whose names must already be
+  attached to a page that does not exist until the POST allocates it) goes through the generic XWiki
+  object REST API against the page in `reference`. `GET` and `PUT` on one release note and on one
+  change were added after 2.7, and a `PUT` *replaces*: a property the request omits is emptied, so
+  send back what the creation answered with the new values added. **Check which version the wiki
+  runs before relying on the `PUT`** — `GET …/changes/<entry>` answering 404 on a change that exists
+  means it is older. Either way, never pre-create an entry page to work around the ordering: a page
   sitting at the next `Entry###` corrupts the allocation.
 - Failures answer `{message, reference}`: `409` exists, `401` (guest) or `403` (logged in) not
   allowed, `404` no such release note, `400` unusable, `500` wiki failure.

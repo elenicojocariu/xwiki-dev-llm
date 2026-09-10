@@ -244,7 +244,9 @@ Applied by `xwiki-fix-sonarqube-issue`, which owns the *procedure*.
   the `Entry###` children that *are* the "New and Noteworthy" list, why entries belong to the RC and
   not to the final release), the REST endpoints that create and list them and the traps a client
   must know, the drifting category vocabulary, where an entry's screenshot must come from, and how
-  its reference becomes the URL the JIRA documentation fields want. Applied by
+  its reference becomes the URL the JIRA documentation fields want — plus why an extension **not**
+  bundled in XWiki Standard uses none of it and owes no entry, its release notes being the
+  Repository application's per-version ones on extensions.xwiki.org. Applied by
   `xwiki-release-documentation`.
 
 ### decisions/ (ADRs)
