@@ -173,10 +173,10 @@ deciding whether to upgrade looks at the picture first. Where that picture comes
   documentation page's attachment would silently rewrite what old release notes claim.
 - `screenshots` therefore holds the names of the copies on the entry page.
 
-These are not the before/after images the issue itself owes (those exist on the JIRA issue to show
-the fix works — [[../servers/jira]]). A change that is UI-visible but got **no** documentation page
-has no screenshot to reuse; treat that as a sign the documentation verdict may be wrong rather than
-quietly falling back to the issue's images.
+These are not the before/after images the issue owes (those live on the JIRA issue to show the fix
+works — [[../servers/jira]]), and they are not a substitute for one: a UI-visible change with **no**
+documentation page has no screenshot to reuse, so it is flagged for the developer rather than filled
+in from elsewhere — it usually means the documentation verdict is wrong.
 
 **Category is a drifting free-text vocabulary, and the existing spelling wins.** The values are
 mostly JIRA component names but the two have diverged — the release notes say `Blocknote` where JIRA

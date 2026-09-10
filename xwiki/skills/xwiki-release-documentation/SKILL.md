@@ -194,9 +194,8 @@ XCOMMONS-3752  Task         N/A                               N/A            —
   existing vocabulary must win over the JIRA component spelling and a new value must be proposed
   rather than invented — the drift, and the recipe that harvests the vocabulary actually in use,
   are in the OKF; importance because a non-zero one is an editorial claim and must be justified in
-  the plan. `audience` is derived without asking, and so are `screenshots` — except when the change
-  is UI-visible and the documentation verdict was `N/A`, which leaves the entry no screenshot to
-  reuse: **flag that**, since it usually means the documentation verdict is wrong.
+  the plan. `audience` and `screenshots` are derived without asking — except a UI-visible change
+  with no documentation page, whose missing screenshot is **flagged**, never substituted (OKF).
 
 - **Existing state** — never silently overwritten:
 
@@ -242,10 +241,8 @@ an `xwiki-knowledge` EXTEND candidate.
 Everything else about the prose — Diataxis type, titles, page structure fields, style, versioning —
 is `xwiki-doc-writing`'s. Delegate to it rather than restating it.
 
-**A UI-visible change gets its screenshot here, not in §6.2.** The image is produced for the
-documentation page as part of documenting the change; the entry reuses that exact image. This is
-why §6.1 runs before §6.2 for such a change — see the OKF's screenshot rule for why the release
-note must never shoot its own.
+**A UI-visible change gets its screenshot here, not in §6.2** — it is produced for the
+documentation page and the entry reuses that exact image (OKF), which is why this step runs first.
 
 ### 6.2 The release-note entry
 
