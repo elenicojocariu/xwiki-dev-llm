@@ -240,15 +240,12 @@ Applied by `xwiki-fix-sonarqube-issue`, which owns the *procedure*.
   (and what changes when the target is xwiki-contrib — contrib parent at the LTS version,
   `xwiki.extension.features`, same version), `git subtree add` to merge in, retiring to the
   (unsupported) Attic, and the top-level-extension criteria.
-- **release-notes** — how the Release Notes Application stores a release note (the
-  `ReleaseNotes.Data.<Product>.<ShortVersion>` page, the `Entry###` children that *are* the "New and
-  Noteworthy" list, and why entries belong to the RC and not to the final release), the **REST
-  endpoints (since 2.7) that create and list release notes and changes** — with the traps a client
-  must know: a POST answers the *stored* value, a duplicate release note is a `409`, changes are
-  never deduplicated, and a listing on a missing release note is an empty `200` and not a `404` —
-  how an entry's `reference` becomes the URL a JIRA field wants, and the two JIRA documentation
-  fields with the bare-`N/A` rule. Category is a drifting free-text vocabulary (`Blocknote` vs
-  JIRA's `BlockNote`) with a harvest recipe. Applied by the `xwiki-release-documentation` skill.
+- **release-notes** — how the Release Notes Application stores a release note (the page it lives in,
+  the `Entry###` children that *are* the "New and Noteworthy" list, why entries belong to the RC and
+  not to the final release), the REST endpoints that create and list them and the traps a client
+  must know, the drifting category vocabulary, where an entry's screenshot must come from, and how
+  its reference becomes the URL the JIRA documentation fields want. Applied by
+  `xwiki-release-documentation`.
 
 ### decisions/ (ADRs)
 Architectural Decision Records — the *why* behind durable choices (context, decision, consequences),
