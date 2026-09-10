@@ -214,7 +214,8 @@ Applied by `xwiki-fix-sonarqube-issue`, which owns the *procedure*.
   in code the unreleased dev version introduced reopens that issue instead — the tell is an Affects
   Version nobody could have hit the bug in), the durable issue-field conventions
   (Component, Affects Version = oldest affected/else last LTS, Fix Version, and the `flickering`
-  label + "Flickering Test" field that let a CI failure be joined to its issue); values are volatile;
+  label + "Flickering Test" field that let a CI failure be joined to its issue, and the two
+  documentation fields); values are volatile;
   resolving/closing (Fixed vs. Cannot Reproduce for already-covered issues, assign to yourself);
   attachments (REST-only, and the attachment URL is how an image reaches a GitHub PR body); and
   wiki-markup gotchas (wrap literals in `{{…}}`, don't over-escape prose, never escape inside `{code}`).
@@ -239,6 +240,12 @@ Applied by `xwiki-fix-sonarqube-issue`, which owns the *procedure*.
   (and what changes when the target is xwiki-contrib — contrib parent at the LTS version,
   `xwiki.extension.features`, same version), `git subtree add` to merge in, retiring to the
   (unsupported) Attic, and the top-level-extension criteria.
+- **release-notes** — how the Release Notes Application stores a release note (the page it lives in,
+  the `Entry###` children that *are* the "New and Noteworthy" list, why entries belong to the RC and
+  not to the final release), the REST endpoints that create and list them and the traps a client
+  must know, the drifting category vocabulary, where an entry's screenshot must come from, and how
+  its reference becomes the URL the JIRA documentation fields want. Applied by
+  `xwiki-release-documentation`.
 
 ### decisions/ (ADRs)
 Architectural Decision Records — the *why* behind durable choices (context, decision, consequences),
@@ -253,7 +260,7 @@ each grounded in a cited source. `_template.md` holds the format and the groundi
 `xwiki-legacy`, `xwiki-deploy-extension`, `xwiki-rest-api`, `xwiki-xar-pages`, `xwiki-doc-writing`, `xwiki-doc-convert`, `xwiki-translations`,
 `xwiki-contrib-release-blog-post`, `xwiki-fix-sonarqube-issue`, `xwiki-backport`,
 `xwiki-backport-testneeded`, `xwiki-jira`, `xwiki-security-advisory`, `xwiki-openproject`,
-`xwiki-release-test-triage`, `xwiki-review`.
+`xwiki-release-test-triage`, `xwiki-release-documentation`, `xwiki-review`.
 
 ## How to extend the OKF (EXTEND)
 

@@ -91,6 +91,21 @@ A test that fails intermittently gets its own issue, and two things make it find
   `org.xwiki.search.test.ui.AllIT$NestedSolrSearchIT#searchExclusions` — the exact form CI reports,
   so tooling can join a CI failure to its issue instead of guessing from the summary. Fill it in.
 
+## The documentation fields
+
+Two custom fields record where a fixed issue ended up documented, and they are independent of each
+other:
+
+- **"Documentation"** (`customfield_10270`) — the URL of the page documenting the change.
+- **"Documentation in Release Notes"** (`customfield_10273`) — the URL of the release-note entry.
+
+Both take an absolute URL (several are space-separated), or exactly **`N/A`** — no parenthetical,
+no sentence, because `= "N/A"` is what makes "find every fixed issue nobody documented" a query.
+Never write an anchor into them: it is derived from the entry title and breaks when the entry is
+retitled. Filtering trap: `Documentation` does **not** support the `!=` JQL operator (400 from the
+search API) — use `is EMPTY` / `is not EMPTY`. The rest, including how an entry is created, is in
+[[../processes/release-notes]]; the procedure is the **`xwiki-release-documentation`** skill.
+
 ## Resolving / closing an issue
 
 Choose the **resolution** that matches reality and **assign the issue to yourself** as you close it
