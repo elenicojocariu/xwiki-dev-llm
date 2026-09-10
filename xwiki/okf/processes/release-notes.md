@@ -28,23 +28,15 @@ the declarative half it relies on.
 | **Documentation** | `customfield_10270` | the absolute URL of the page documenting the change |
 | **Documentation in Release Notes** | `customfield_10273` | the absolute URL of the release-note entry |
 
-Both are plain strings, on `XWIKI`, `XCOMMONS` and `XRENDERING` alike.
+Both are plain strings, on `XWIKI`, `XCOMMONS` and `XRENDERING` alike. The rules for their *values*
+— bare `N/A` and why, space separation, never an anchor, and the `!=` JQL trap — live with the other
+issue-field conventions in [[../servers/jira]]. What is specific to release notes:
 
-Durable rules for their values:
-
-- **When there is nothing to write, the value is exactly `N/A`** — no parenthetical, no sentence.
-  The team habit of writing `N/A (internal class)` looks helpful and costs the only thing the field
-  is good for: `Documentation = "N/A"` is what makes "find every fixed issue nobody documented"
-  a query. The *reason* belongs in a JIRA comment or the run report, not in the field.
-- **Several URLs are space-separated** (one issue can produce two entries).
-- **Never write an anchor.** `…/18.8.0RC1/#HSomeTitle` is derived from the entry's title, so
-  retitling the entry silently breaks every JIRA link pointing at it. Link the entry page itself.
-- The two verdicts are independent: `Documentation = N/A` with a real
-  `Documentation in Release Notes` URL is a common and correct combination (a behaviour change worth
-  announcing that no documentation page describes).
-
-Filtering trap: the **`Documentation` field does not support the `!=` JQL operator** (the search API
-answers 400). Use `is not EMPTY` / `is EMPTY`.
+- **The two are independent.** `Documentation = N/A` alongside a real `Documentation in Release
+  Notes` URL is a common and correct combination — a behaviour change worth announcing that no
+  documentation page describes.
+- The URL the second one wants is derived from what the REST endpoint returns, not built by hand —
+  see **`reference` → the URL a JIRA field wants** below.
 
 ## How a release note is stored
 
@@ -126,6 +118,11 @@ Behaviour worth knowing before writing a client:
   Filters: `audience`, `category`, `importance` (comma-separated, names or numbers),
   `containsScreenshots`.
 - `POST …/changes` on a version with no release note answers `404`.
+- **There is no update endpoint** — the resources carry `GET` and `POST` only. A change is written
+  once; anything set afterwards (notably `screenshots`, whose names must already be attached to a
+  page that does not exist until the POST allocates it) goes through the generic XWiki object REST
+  API against the page in `reference`. Never pre-create an entry page to work around this: a page
+  sitting at the next `Entry###` corrupts the allocation.
 - Failures answer `{message, reference}`: `409` exists, `401` (guest) or `403` (logged in) not
   allowed, `404` no such release note, `400` unusable, `500` wiki failure.
 

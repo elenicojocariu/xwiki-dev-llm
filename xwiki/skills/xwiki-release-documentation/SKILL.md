@@ -13,10 +13,15 @@ What it produces, per fixed issue: a **documentation verdict** and a **release-n
 either a URL or `N/A`, each *proven* from the change itself, and each written into the issue's JIRA
 field once the artefact it points at actually exists.
 
-The declarative half — the release-note data model, the REST contract, the two JIRA field ids and
-the `N/A` rule — is `okf/processes/release-notes.md`. **Read it before running this skill.** The
-issue-field conventions are in `okf/servers/jira.md`; the xwiki.org REST access rules
-(Cloudflare User-Agent, `/xwiki/rest`, `~/.xwiki-credentials`) are in `okf/servers/index.md`.
+The declarative half — the release-note data model, the REST contract and the entry conventions —
+is `okf/processes/release-notes.md`. **Read it before running this skill**; this file is the
+procedure and does not restate it. The two JIRA field ids and the rules for their values are in
+`okf/servers/jira.md`, and the xwiki.org REST access rules (Cloudflare User-Agent, `/xwiki/rest`,
+`~/.xwiki-credentials`) in `okf/servers/index.md`.
+
+Resolve `okf/` from this skill's directory as `../../okf/`; in Claude Code
+`${CLAUDE_PLUGIN_ROOT}/okf/`, in Kimi Code `${KIMI_SKILL_DIR}/../../okf/`, in opencode
+`$XWIKI_LLM_HOME/xwiki/okf/`.
 
 ## 0. Two modes
 
@@ -186,10 +191,10 @@ XCOMMONS-3752  Task         N/A                               N/A            —
   Updating an existing page keeps the single content gate.
 
 - **Category and importance are always put to the developer**, per entry. Category because the
-  existing vocabulary must win over the JIRA component spelling (`Blocknote` ≠ `BlockNote`,
-  `LiveData` ≠ `Live Data`) and a new value must be proposed rather than invented; importance
-  because a non-zero one is an editorial claim and must be justified in the plan. `audience` and
-  `screenshots` are derived without asking.
+  existing vocabulary must win over the JIRA component spelling and a new value must be proposed
+  rather than invented — the drift, and the recipe that harvests the vocabulary actually in use,
+  are in the OKF; importance because a non-zero one is an editorial claim and must be justified in
+  the plan. `audience` and `screenshots` are derived without asking.
 
 - **Existing state** — never silently overwritten:
 
@@ -259,41 +264,41 @@ another author.
    {"product": "XWiki", "version": "<the JIRA version name>", "released": false}
    ```
 
-   A `409` means somebody created it in between — re-read the list and carry on. Report what the
-   template does *not* fill and what is therefore **left for the release manager**: the introductory
-   paragraph, the security-severity sentence, `{{language codes="…"/}}`, and the
-   `ReleaseNotes.BackwardCompatibility` object holding the Revapi XML.
+   A `409` means somebody created it in between — re-read the list and carry on. The template
+   leaves several things for the **release manager** (the OKF lists them): report those in §7,
+   never invent them here.
 
 3. **Post the entry**:
 
    ```
    POST /xwiki/rest/wikis/xwiki/releasenotes/XWiki/<version>/changes
-   {"title": …, "summary": …, "audience": …, "importance": …, "category": …, "screenshots": […]}
+   {"title": …, "summary": …, "audience": …, "importance": …, "category": …}
    ```
 
-   - `title` — a **user-facing rephrasing**, not the JIRA summary verbatim.
-   - `summary` — XWiki syntax, one to three short paragraphs, with the documentation link woven into
-     the prose as an interwiki link.
-   - `description` — omit it; it is empty in every recent entry.
-   - No JIRA key inside the entry.
-   - `importance` is `low` / `medium` / `high` over REST, not the stored `0` / `1` / `2`.
-   - `screenshots` names must already be attached to the entry page — so attach the issue's
-     before/after images to the created page first, then set the names; a name containing a comma
-     cannot be stored.
+   What goes in each field — the user-facing `title`, the shape of `summary`, why `description` is
+   omitted, no JIRA key in an entry, the `low`/`medium`/`high` spelling — is the OKF's **Writing an
+   entry**. Two things are procedural and belong here:
 
-   **Read the URL back out of the response**, never construct it from an assumed entry number: the
-   response carries the stored value, and `reference` is the page that was actually allocated.
+   - **Read the URL back out of the response**, never construct it from an assumed entry number:
+     the response carries the stored value, and `reference` is the page actually allocated.
+   - **Screenshots take a second and third call, in this order.** A `screenshots` name must name an
+     attachment that already exists on the entry page, and the page does not exist until the POST
+     allocates it — so: post the change *without* `screenshots`, attach the issue's before/after
+     images to the page named by `reference` (standard attachment REST), then set the
+     `screenshots` property on its `ChangeClass` object (generic object REST — `xwiki-rest-api`),
+     because **the RN API has no update endpoint**. Never pre-create the entry page to get around
+     this: a page sitting at the next `Entry###` corrupts the allocation.
 
 ### 6.3 The JIRA fields
 
 Only once the artefacts exist. `Documentation` = `customfield_10270`, `Documentation in Release
-Notes` = `customfield_10273`; write them over REST (`xwiki-jira`).
+Notes` = `customfield_10273`; write them over REST (`xwiki-jira`). Their values follow
+`okf/servers/jira.md`: absolute URLs, space-separated when there are several, exactly bare **`N/A`**
+when there is nothing, never an anchor.
 
-- Absolute URLs; several are space-separated.
-- Nothing to write → exactly **`N/A`**, with no parenthetical. The reason goes in the run report and,
-  if it is worth keeping, a JIRA comment. This changes current team habit (`N/A (internal class)`)
-  and it is deliberate: `= "N/A"` is what makes the field queryable.
-- **Never an anchor** — it is derived from the entry title and breaks when the entry is retitled.
+Bare `N/A` **changes current team habit** — `N/A (internal class)` is on real issues — and is
+deliberate. Where a reason is worth keeping, it goes in the run report and, if it matters beyond
+the run, a JIRA comment; never into the field.
 
 ## 7. Verification and the report
 
