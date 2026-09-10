@@ -194,7 +194,9 @@ XCOMMONS-3752  Task         N/A                               N/A            —
   existing vocabulary must win over the JIRA component spelling and a new value must be proposed
   rather than invented — the drift, and the recipe that harvests the vocabulary actually in use,
   are in the OKF; importance because a non-zero one is an editorial claim and must be justified in
-  the plan. `audience` and `screenshots` are derived without asking.
+  the plan. `audience` is derived without asking, and so are `screenshots` — except when the change
+  is UI-visible and the documentation verdict was `N/A`, which leaves the entry no screenshot to
+  reuse: **flag that**, since it usually means the documentation verdict is wrong.
 
 - **Existing state** — never silently overwritten:
 
@@ -240,6 +242,11 @@ an `xwiki-knowledge` EXTEND candidate.
 Everything else about the prose — Diataxis type, titles, page structure fields, style, versioning —
 is `xwiki-doc-writing`'s. Delegate to it rather than restating it.
 
+**A UI-visible change gets its screenshot here, not in §6.2.** The image is produced for the
+documentation page as part of documenting the change; the entry reuses that exact image. This is
+why §6.1 runs before §6.2 for such a change — see the OKF's screenshot rule for why the release
+note must never shoot its own.
+
 ### 6.2 The release-note entry
 
 All writes go through the **Release Notes Application REST endpoints**; the contract, the
@@ -281,13 +288,15 @@ another author.
 
    - **Read the URL back out of the response**, never construct it from an assumed entry number:
      the response carries the stored value, and `reference` is the page actually allocated.
-   - **Screenshots take a second and third call, in this order.** A `screenshots` name must name an
-     attachment that already exists on the entry page, and the page does not exist until the POST
-     allocates it — so: post the change *without* `screenshots`, attach the issue's before/after
-     images to the page named by `reference` (standard attachment REST), then set the
-     `screenshots` property on its `ChangeClass` object (generic object REST — `xwiki-rest-api`),
-     because **the RN API has no update endpoint**. Never pre-create the entry page to get around
-     this: a page sitting at the next `Entry###` corrupts the allocation.
+   - **Screenshots take two more calls, in this order.** A `screenshots` name must name an
+     attachment that already exists on the entry page, and that page does not exist until the POST
+     allocates it. So: post the change *without* `screenshots`; **download the screenshot from the
+     documentation page and re-upload it** to the page named by `reference` (standard attachment
+     REST); then set the `screenshots` property on its `ChangeClass` object (generic object REST —
+     `xwiki-rest-api`), because **the RN API has no update endpoint** (RN-119). Copy the file —
+     never link the documentation page's attachment, or refreshing that page later rewrites what
+     old release notes show. Never pre-create the entry page to get around the ordering: a page
+     sitting at the next `Entry###` corrupts the allocation.
 
 ### 6.3 The JIRA fields
 

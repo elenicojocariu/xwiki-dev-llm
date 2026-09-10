@@ -156,8 +156,27 @@ them.
   headline feature, not for "this one matters to me".
 - `audience` follows who the change affects, and decides the section of the release note the entry
   lands in. Developer-facing changes are the largest group.
-- `screenshots` are the before/after images the change already owes its JIRA issue (see
-  [[../servers/jira]]), re-attached to the entry page.
+- `screenshots` — see the rule below; a UI-visible change is expected to have one.
+
+**A change about something visible in the UI carries a screenshot.** Not optionally: a reader
+deciding whether to upgrade looks at the picture first. Where that picture comes from is fixed.
+
+- **It is produced for the reference documentation first**, as part of documenting the change, and
+  the release note *reuses* it. Never shoot a fresh one for the release note. Two screenshots of
+  the same feature taken at different moments disagree about window width, theme, sample data and
+  what is hovered, and the release note then illustrates something subtly unlike the documentation
+  it links to.
+- **It is copied onto the entry page, never linked to the documentation page.** Download the
+  attachment and re-upload it, so the entry owns its own copy under its own name. A release note is
+  the record of one moment: when the documentation page's screenshot is refreshed for a later UI,
+  every past release note must still show the UI *as it was at that release*. Pointing at the
+  documentation page's attachment would silently rewrite what old release notes claim.
+- `screenshots` therefore holds the names of the copies on the entry page.
+
+These are not the before/after images the issue itself owes (those exist on the JIRA issue to show
+the fix works — [[../servers/jira]]). A change that is UI-visible but got **no** documentation page
+has no screenshot to reuse; treat that as a sign the documentation verdict may be wrong rather than
+quietly falling back to the issue's images.
 
 **Category is a drifting free-text vocabulary, and the existing spelling wins.** The values are
 mostly JIRA component names but the two have diverged — the release notes say `Blocknote` where JIRA
