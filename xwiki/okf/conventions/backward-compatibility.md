@@ -98,6 +98,12 @@ notes** (`allowed` items are not listed there), so it is not cosmetic:
 | `documented` | a real break, but on `@Unstable` code |
 | `allowed` | not a break in our opinion: a semantically-"breaking" but harmless change (e.g. adding an annotation), a Revapi bug/limitation, or an API merely moved to another Maven module (the legacy case) |
 
+**Where the ignore goes** — two silent failures, both leaving the build failing with the ignore
+apparently in place. `<revapi.differences>` needs `combine.children="append"`, or Maven merges your
+`<item>`s *positionally* into the ones inherited from the parent and each takes on the parent's
+`<old>`/`<ignore>`, matching nothing; and it must sit inside the `revapi-check` `<execution>`, whose
+own configuration otherwise wins.
+
 ## Where Revapi does and does not look
 
 Revapi analyses the primary artifact **and its transitive dependencies**, but only reports differences
