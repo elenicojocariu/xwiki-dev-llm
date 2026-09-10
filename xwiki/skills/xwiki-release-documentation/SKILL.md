@@ -339,8 +339,10 @@ another author.
      attachment that already exists on the entry page, and that page does not exist until the POST
      allocates it. So: post the change *without* `screenshots`; **download the screenshot from the
      documentation page and re-upload it** to the page named by `reference` (standard attachment
-     REST); then set the `screenshots` property on its `ChangeClass` object (generic object REST —
-     `xwiki-rest-api`), because **the RN API has no update endpoint** (RN-119). Copy the file —
+     REST); then set `screenshots` — over the RN API's `PUT` on one change where the wiki runs a
+     version that has it, otherwise on the entry's `ChangeClass` object through generic object REST
+     (`xwiki-rest-api`). The OKF's endpoint list says how to tell the two apart, and that a `PUT`
+     replaces rather than merges. Copy the file —
      never link the documentation page's attachment, or refreshing that page later rewrites what
      old release notes show. Never pre-create the entry page to get around the ordering: a page
      sitting at the next `Entry###` corrupts the allocation.
@@ -384,7 +386,14 @@ write the field. A partially-done issue stays marked partial in the plan file, w
 
 ## 9. Scope
 
-Core only: `XWIKI`, `XCOMMONS`, `XRENDERING`, `product = XWiki`. But **product and release-note
-location are parameters, not constants** in everything above, so an xwiki-contrib extension release
-can reuse the machinery later. Contrib is out of scope today — for announcing a contrib release use
-`xwiki-contrib-release-blog-post`.
+Core only: `XWIKI`, `XCOMMONS`, `XRENDERING`, `product = XWiki` — plus any other product the
+Release Notes Application on xwiki.org holds (`Cristal`, `ActivityPub Application`), for which
+everything above works, **product and release-note location being parameters, not constants**.
+
+**An extension not bundled in XWiki Standard is out of scope, and owes no release-note entry at
+all.** Its release notes are the Repository application's per-version ones on extensions.xwiki.org,
+which are a `{{jira}}` macro over the fix version — so its fixed issues take `Documentation in
+Release Notes = N/A`, there is nothing to do until the version is released, and the release is
+announced by a blog post (`xwiki-contrib-release-blog-post`). The mechanism, and the `verify:` that
+reads it back, are in `okf/processes/release-notes.md`. The documentation half (§6.1) still applies
+to such a change, so a SINGLE run over one of its issues is a documentation-only run.
