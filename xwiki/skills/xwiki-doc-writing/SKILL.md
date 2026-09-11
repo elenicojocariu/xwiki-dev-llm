@@ -106,7 +106,9 @@ everything a regex cannot decide.
    asks for the parameters, types, defaults and return value, which is a *row*: a bare signature is a
    column, and the code example is reserved for what a cell cannot hold (a usage snippet, a builder
    call, a whole role interface). A section per member earns its place only when each carries something
-   uncellable, such as a screenshot per option.
+   uncellable, such as a screenshot per option. **The table never gets a `Since` / `Version` column** —
+   version information is a `{{version}}` badge on the rows that need one, and only for versions at or
+   after the LTS (step 11).
 8. **Apply the style rules** — `"quotes"` for UI elements, uppercase-first XWiki terminology,
    `##literals##`, link-reference syntax (never hardcoded URLs), `{{scm}}` for GitHub files, the
    code macro with an explicit `language`, the display macro to avoid duplication, and **no overused
@@ -134,7 +136,11 @@ everything a regex cannot decide.
    `{{embed}}` macro and never as a link**, Gallery for several images, PlantUML (`bluegray`) for
    diagrams. See `okf/conventions/documentation.md`.
 11. **Respect version perspective** — write for the latest version; use `{{version}}` (with `before`
-    for changed behavior) only for genuine new/changed behavior.
+    for changed behavior) only for genuine new/changed behavior. A version is **only ever** a
+    `{{version}}` badge, never bare text and never a table column; and only versions **at or after the
+    current LTS** appear at all — anything older is deleted, not badged. The macro strips the
+    qualifier (`since="18.8.0RC1"` renders `XWiki 18.8.0+`), so a Java `@since` value can be passed to
+    it verbatim. See `okf/conventions/documentation.md`.
 12. **Run the de-duplication *and trimming* pass before saving** — this is a separate step because every
     page reads fine on its own and both defects are invisible while writing. Start with the two that need
     no judgement and that `lint` decides for you — **the sibling How-tos' step 1** and **an attachment
@@ -232,7 +238,10 @@ Each finding cites the rule it relates to; confirm against the live guide when b
 - [ ] **Location** — `documentation.xs` for a bundled extension, `documentation.extensions` otherwise;
       then the most relevant existing topic for its audience/type.
 - [ ] **Versioning** — written for the latest version; `{{version}}` only for new/changed behavior;
-      no obsolete macros or content for unsupported versions.
+      no obsolete macros or content for unsupported versions. **Every version on the page is inside a
+      `{{version}}` macro** — no bare version in prose and **no `Since` / `Version` column in a
+      reference table** — and every version cited is at or after the current LTS; an older one is
+      removed outright rather than reformatted.
 - [ ] **FAQ size** — at most **5** entries **and at most 25 lines**; the surplus became a separate
       troubleshooting page.
 - [ ] **Title/name has no type word** — no "How to", "Explanation", "Reference", "Tutorial" in the
