@@ -161,15 +161,19 @@ def lint(mod):
                 problems.append(f'{name}: {p["type"]} without a numbered list')
             if re.search(r'^== ', p['content'], re.M):
                 problems.append(f'{name}: {p["type"]} with a level-2 heading in Content')
-            # What a step has to *show* depends on the audience: a Developer page is carried by code
-            # examples and its result step shows the produced output, not a screenshot of a UI it
-            # does not have. Asking a Developer procedure for screenshots is what makes it
-            # unfixable, so the rule is type-scoped rather than waived.
-            visual, shows = (('{{code', 'code example') if p['target'] == 'developer'
-                             else ('{{image', 'screenshot'))
-            if steps and visual not in steps[-1]:
+            # Every step has to *show* something concrete, but which form is right depends on what
+            # is being shown, and no check can tell a screenshot of a UI from a screenshot of text.
+            # A screenshot is right for a UI; a code macro is right for textual content — a config
+            # file, a command, a snippet — above all when the reader has to edit or copy it, since
+            # text cannot be selected out of an image. So both forms count here, and choosing
+            # between them is the writer's judgement; the audience only decides which one is
+            # *expected*, and so which one the message names.
+            expected = 'code example' if p['target'] == 'developer' else 'screenshot'
+            shows = f'{expected} (nor the other of code macro / image)'
+            visuals = ('{{code', '{{image')
+            if steps and not any(v in steps[-1] for v in visuals):
                 problems.append(f'{name}: result step shows no {shows}')
-            shown = len([s for s in steps if visual in s])
+            shown = len([s for s in steps if any(v in s for v in visuals)])
             if steps and shown * 2 < len(steps):
                 problems.append(f'{name}: only {shown}/{len(steps)} steps carry a {shows}')
             if '>>doc:' not in p['content'].split('\n1. ')[0]:
