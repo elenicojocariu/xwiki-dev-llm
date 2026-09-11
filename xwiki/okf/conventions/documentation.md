@@ -528,6 +528,18 @@ it. For a conversion, the split into pages *is* that decision.
   Macro" section.
 - **Maintenance** — remove content and version macros for **unsupported old versions**, and remove
   obsolete macros once the referenced version is no longer relevant.
+- **The macro is the only form a version may take.** A version never appears on a page as bare text:
+  not in prose, not in a cell, and above all **not as a `Since` (or `Version`, or `Available in`)
+  column in a reference table**. That column is the failure mode this rule exists to catch, because
+  an API reference makes it look natural — it is the Javadoc `@since` tag transcribed into a table,
+  and it defeats the macro on every count: it renders no badge, it survives every gardening pass
+  unnoticed, and a column has to be filled for *every* row, which is what drags pre-LTS versions back
+  onto the page. Badge the rows that need it and let the others carry nothing.
+- **A version below the LTS floor is deleted, not badged.** "At or after the LTS" is not a
+  formatting rule to apply to the numbers you have, it decides whether the number appears at all: a
+  member that has existed since before the current LTS cycle is simply documented, with no version
+  marker of any kind. In a table this means most rows are unbadged, which is the intended result and
+  not an omission to fill in.
 
 ### The `{{version}}` macro — real signature and rendering
 
@@ -543,6 +555,10 @@ Full signature (Documentation 1.7+, per
   sentence must not repeat the numbers** or the reader sees them twice.
 - **Where it works:** inline, **inside a table cell**, and as a block wrapping several paragraphs plus
   a code block.
+- **It normalises the qualifier away:** `since="18.8.0RC1"` renders `XWiki 18.8.0+`. So the Java
+  `@since` value can be passed to the macro **verbatim**, without hand-stripping the `RC1`/`M1`
+  suffix — the reader still sees the release they install. This is only about the *value*: the
+  `@since` tag itself is a source-code convention and never becomes a column on the page.
 
 ### What deserves a version badge at all
 
