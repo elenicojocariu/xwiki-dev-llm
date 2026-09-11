@@ -98,9 +98,9 @@ everything a regex cannot decide.
    important *child* pages, not a "key points" summary, and the automatic "More" table already lists
    every child — see `okf/conventions/documentation.md`.
 6. **End a How-to / Tutorial with a result step** — the last numbered item shows the reader *what they
-   should now see*: a short "The macro is inserted in the page, as follows:" plus a **screenshot** (or,
-   on a Developer page, the produced output). A procedure that stops at the last action leaves the
-   reader unable to tell whether it worked.
+   should now see*: a short "The macro is inserted in the page, as follows:" plus a **screenshot** (or a
+   **code macro** when the result is text, or the produced output on a Developer page). A procedure that
+   stops at the last action leaves the reader unable to tell whether it worked.
 7. **Put a Reference's members in one table** — `|=Member |=Returns |=Default |=What it does`, not a
    section per member and not a `name: meaning` bullet list. "Use code examples for API references"
    asks for the parameters, types, defaults and return value, which is a *row*: a bare signature is a
@@ -117,7 +117,11 @@ everything a regex cannot decide.
    Developer pages, and on an Explanation about design/architecture a **PlantUML `bluegray` diagram**
    (components and flows for developers; a lifecycle, workflow or decision diagram for users — be
    creative about what clarifies the concept). An image replaces a paragraph of "click the menu at the top
-   right", a snippet replaces a paragraph of API prose. **Don't force it**: a short Explanation or a small
+   right", a snippet replaces a paragraph of API prose. **Never screenshot text**: whenever what you are
+   showing is itself text — a configuration file, a command, a log line, a query — it goes in a **code
+   macro**, whatever the page's audience, and most of all when the reader has to edit or copy it, since
+   text cannot be selected out of an image (an Administrator How-to editing `xwiki.properties` shows code
+   blocks, not pictures of them). **Don't force it**: a short Explanation or a small
    Reference table can be complete with no visual, and a decorative one costs the reader attention and a
    maintainer an update. Capture screenshots on the local instance agreed above, using the
    [Documentation Resources](https://dev.xwiki.org/xwiki/bin/view/Community/DocGuide/DocumentationResources/)
@@ -180,9 +184,13 @@ Each finding cites the rule it relates to; confirm against the live guide when b
 - [ ] **Steps** — in How-to/Tutorial each step starts with a verb and is in a numbered list, no
       inline explanations.
 - [ ] **Result step** — a How-to/Tutorial's **last step shows the result** (what the reader should now
-      see), normally with a screenshot; the list does not stop at the final action.
+      see), normally with a screenshot, or a code macro when the result is text; the list does not stop
+      at the final action.
 - [ ] **Shows — User/Administrator** — **screenshots** of the UI the page describes, on the steps that
       need them.
+- [ ] **Shows — no screenshots of text** — anything that is itself text (configuration file, command,
+      log line, query) is in a **code macro**, not an image, whatever the audience — above all where the
+      reader has to edit or copy it.
 - [ ] **Shows — Developer** — **code examples**, and a result step showing the **produced output**
       rather than a screenshot of a UI the page does not have.
 - [ ] **Shows — Explanation** — a **diagram** where there is a component structure, a request or data

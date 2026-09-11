@@ -6,6 +6,8 @@ summary: The rules for xwiki.org documentation — Diataxis page types & audienc
   steps and a mandatory one on the result step, a topic page being an Explanation that links to its
   Extensions-wiki page), showing
   rather than only telling — screenshots for User/Admin pages, code examples for Developer ones,
+  a code macro rather than a screenshot whenever what is shown is itself text (a config file, a command)
+  and above all when the reader must edit or copy it,
   architecture/concept diagrams for Explanations, and when *not* to force a visual, how much belongs on
   one page (granularity, keeping verbosity low, a hub page routing rather than narrating, how
   duplication is actually detected & why the surviving copy of shared content wants a visible page rather
@@ -131,15 +133,16 @@ result, a bookmark or a link, none of which carry the surrounding context. Same 
   Do **not** add extra explanations inside the steps; reader questions and clarifications go in the
   **FAQ** field instead. Tutorials may include short concrete examples.
   Its **opening sentence** says what the reader will achieve and **links to a relevant Explanation**.
-- **Most steps carry a screenshot** — skip only those a picture adds nothing to (a generic *Click
-  Edit* / *Click Save*, or a control already boxed in the previous step's image). **One screenshot on
-  a seven-step UI procedure is a miss**, even though the page technically has one.
-- **The last step shows the result, and its screenshot is mandatory.** A procedure that ends on the
+- **Most steps carry a screenshot** — or a **code macro**, when what the step shows is itself text
+  (see *Textual content is shown as a code macro* below). Skip only those a picture adds nothing to
+  (a generic *Click Edit* / *Click Save*, or a control already boxed in the previous step's image).
+  **One screenshot on a seven-step UI procedure is a miss**, even though the page technically has one.
+- **The last step shows the result, and showing it is mandatory.** A procedure that ends on the
   last action leaves the reader unable to tell whether it worked. Close with a step that *shows what
-  they should now see* — "The macro is inserted in the page, as follows:" plus the screenshot (or, for
-  a Developer page, the produced output). Being a list step, it breaks neither the one-short-intro nor
-  the no-explanations-in-steps rule. A How-to stopping at "Click Save" is incomplete, and no automatic
-  check says so.
+  they should now see* — "The macro is inserted in the page, as follows:" plus the screenshot (or the
+  code macro, when the result is text, or the produced output on a Developer page). Being a list step,
+  it breaks neither the one-short-intro nor the no-explanations-in-steps rule. A How-to stopping at
+  "Click Save" is incomplete, and no automatic check says so.
 - **Reference** — prefer **tables**, keep information concise; use **code examples** for API
   references, documenting each element's parameters, types, supported/default values and return value.
   The two halves of that sentence are not alternatives, and reading the second as licence to drop the
@@ -180,6 +183,18 @@ replace a paragraph:
   policy narrative, a page defining a single idea, and a FAQ-shaped page. Decide by shape, not by
   audience — but for a User audience draw it without technical vocabulary. Diagrams use the
   **PlantUML macro with the `bluegray` theme** (see below), so the source stays editable in the page.
+- **Textual content is shown as a code macro, never as a screenshot of text.** The two bullets above
+  split by audience; this one overrides them, and it splits by **what is being shown**. A screenshot is
+  for a UI — a screen, a menu, a control the reader has to find. Anything that is itself text gets a
+  **code macro**: a configuration file, a command line, a log line, a query, a snippet. The rule bites
+  hardest when the reader has to **edit or copy** that text, which is the normal case for a
+  configuration file, because text can be selected out of a code block and cannot be selected out of an
+  image — a screenshot forces the reader to retype it by hand, and to retype it correctly from a
+  picture. A picture of text is also unsearchable, untranslatable, invisible to a screen reader, and
+  impossible to diff when the shipped default changes, so it rots silently. An Administrator How-to
+  whose steps edit `xwiki.properties` therefore carries code macros, even though its audience is one the
+  bullets above expect screenshots for. The screenshot is right only when the *point* is where the text
+  sits on screen rather than the text itself — and then the text still appears in a code macro nearby.
 - **Do not force it.** This is a strong default, not a checkbox: a short Explanation of a single concept,
   a small Reference table, a FAQ-shaped page can be perfectly complete with no visual at all. A
   decorative screenshot, a diagram of something that is not a structure, or a snippet added to satisfy
