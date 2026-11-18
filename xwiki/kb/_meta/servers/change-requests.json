@@ -1,0 +1,171 @@
+{
+  "file": {
+    "questions": [
+      "How do I propose a documentation page change on xwiki.org?",
+      "What can I include in a change request and what will get rejected?",
+      "Why is my change request failing with HTTP 500 or other cryptic errors?",
+      "How do I review and verify what a CR proposes before the merge?"
+    ],
+    "aliases": [
+      "CR",
+      "Change Request Application",
+      "contrib application",
+      "documentation submission"
+    ]
+  },
+  "sections": {
+    "Change Requests on the xwiki.org wikis": {
+      "questions": [
+        "What is a Change Request and when should I use one instead of editing directly?",
+        "How do I access change requests and what are the common failure modes?"
+      ],
+      "aliases": [
+        "CR submission",
+        "documentation workflow"
+      ]
+    },
+    "What a CR can and cannot carry": {
+      "questions": [
+        "Can I include attachments in a change request or will they get rejected?",
+        "What pages can't be changed through a change request and why?",
+        "Can I change both www and extensions.xwiki.org in a single CR?",
+        "Why do I get HTTP 500 when I try to edit a page like WebPreferences?"
+      ],
+      "aliases": [
+        "CR scope",
+        "CR limitations",
+        "XWikiPreferences",
+        "attachments"
+      ]
+    },
+    "Creating and revising a file change": {
+      "questions": [
+        "How do I edit a page when I've already started a change request for it?",
+        "What does the fromchangerequest flag mean and when do I need it?",
+        "Why is my second edit to the same page being dropped or causing conflicts?",
+        "How do I replace an attachment that's already in the CR?"
+      ],
+      "aliases": [
+        "file change",
+        "fromchangerequest=1",
+        "previousVersion",
+        "form token"
+      ]
+    },
+    "The description": {
+      "questions": [
+        "How do I add or edit the description of a CR after creating it?",
+        "Why isn't my CR description being saved when I POST?",
+        "Where does the CR description actually live in the wiki?"
+      ],
+      "aliases": [
+        "CR title",
+        "WebHome content",
+        "SaveChangeRequestHandler"
+      ]
+    },
+    "Reading what a CR proposes, before the merge": {
+      "questions": [
+        "How do I see the actual XML of what a CR is proposing?",
+        "Why does the REST API show the CR as empty when I try to list its contents?",
+        "What do I need to know about reading the file-change attachment format?",
+        "Why are my diagrams and relative links rendering wrong in the CR preview?"
+      ],
+      "aliases": [
+        "file-change attachment",
+        "XAR format",
+        "renderedcontent",
+        "CR preview"
+      ]
+    },
+    "Verifying, before and after the merge": {
+      "questions": [
+        "What should I check to verify a CR is correct before approving it?",
+        "How do I verify that an image was uploaded correctly and hasn't been corrupted?",
+        "Why does the merged page look different from what the CR showed?",
+        "What's the only check that catches a reference resolving to the wrong page?"
+      ],
+      "aliases": [
+        "pre-merge verification",
+        "post-merge validation",
+        "image md5",
+        "reference resolution"
+      ]
+    },
+    "Configuration is per wiki — read it, never assume it": {
+      "questions": [
+        "Who is allowed to review and approve change requests on this specific wiki?",
+        "Why is my CR deadlocked and nobody can merge it?",
+        "How do I know what CR rules apply to this wiki versus another?"
+      ],
+      "aliases": [
+        "Configuration",
+        "preventAuthorsToReview",
+        "usersApprovers",
+        "approvers"
+      ]
+    },
+    "Finding the CRs on a page, and reading a rival proposal": {
+      "questions": [
+        "How do I find all open change requests for a page I'm about to edit?",
+        "How do I search for CRs on the entire wiki?",
+        "What should I check if another CR is editing the same page as mine?"
+      ],
+      "aliases": [
+        "CR discovery",
+        "CR listing",
+        "rival CR",
+        "CR search"
+      ]
+    },
+    "Review comments": {
+      "questions": [
+        "How do I post review feedback on a change request?",
+        "Why does my comment formatting look wrong or get mangled?",
+        "How do I edit a comment after posting it?"
+      ],
+      "aliases": [
+        "CR discussion",
+        "review feedback",
+        "MessageClass",
+        "discussion"
+      ]
+    },
+    "Conflicts: the base never moves on its own": {
+      "questions": [
+        "Why is my CR showing conflicts when I thought it was clean?",
+        "What does rebase actually do and when should I use it?",
+        "How do I resolve a conflict that won't let me merge?"
+      ],
+      "aliases": [
+        "CR conflicts",
+        "three-way merge",
+        "rebase",
+        "conflict resolution"
+      ]
+    }
+  },
+  "proposed": {
+    "related": [
+      "servers/index.md",
+      "conventions/documentation.md",
+      "conventions/documentation-migration.md",
+      "conventions/page-deletion.md"
+    ],
+    "applies-to": []
+  },
+  "source_hash": "ef8babc3ab2767723d211c17148df68c242d778858594d9c95853fd74a637c9d",
+  "file_hash": "9346bc488fb78c887a18e4952479fbbc3346754eb714c663c9e1b7266f1991bc",
+  "section_hashes": {
+    "Change Requests on the xwiki.org wikis": "082079d49cd2bc7badb2891b872505d47959a6239c7a04bf90a4ec6d79770d5e",
+    "What a CR can and cannot carry": "ccd8b6893c28146af24e57860b92c80ac4065396ea23bd45a0a9b2f28249a40b",
+    "Creating and revising a file change": "595bef6637cf1e7117d1008bcc8e5639cf184b2a776dceac3140cbc686ca746b",
+    "The description": "2731042fffec22121cc9796f96c21827efe5a1ef08b9e7d2483a207903078356",
+    "Reading what a CR proposes, before the merge": "71c8acae2e6d95f6411d7b7bb6b5d097a10e9c70f2f8841f04616d7f371707cc",
+    "Verifying, before and after the merge": "23ce8439f5578781782f80679366746096dc82029cc17616e21a3df27e7bfbae",
+    "Configuration is per wiki — read it, never assume it": "40572298a1a0f516a8fe1802897d47c980d630d3362af7557cdf8694c8e70262",
+    "Finding the CRs on a page, and reading a rival proposal": "49b6e8b91c8d0a3cc0e5dceb5983015d61449db1372776ed341d565b3f25f4c4",
+    "Review comments": "b266f817c2d1b5ed8fa509d6de3add977ed5821d38f4be949b1065c60d8c33fb",
+    "Conflicts: the base never moves on its own": "84eb6e580f415b8cda212b9614e7eb09ac0b018ce7ccbc1ec4278175e323466c"
+  }
+}

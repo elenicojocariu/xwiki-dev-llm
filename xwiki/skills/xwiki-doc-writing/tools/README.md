@@ -210,9 +210,11 @@ traps are commented in the file, next to the lines they protect.
   REST API** — and these tools do not do it. From a cookie
   session (POST `j_username`, `j_password` and the login page's `form_token` to
   `/bin/loginsubmit/XWiki/XWikiLogin`), POST the hidden fields of the
-  `/bin/edit/<Space>/<Page>?editor=wiki` form with the new `content`, `docReference=<wiki>:<Space>.<Page>`,
-  `crTitle` and `crDescription` (`crDraft=1` for a draft) to `/xwiki/changerequest/<wiki>/create`: the
-  302's `Location` is the Change Request.
+  `/bin/edit/<Space>/<Page>?editor=wiki` form with the new `content`, `docReference=<wiki>:<Space>.<Page>`
+  and `crTitle` (`crDraft=1` for a draft) to `/xwiki/changerequest/<wiki>/create`: the
+  302's `Location` is the Change Request. `crDescription` is ignored — the description is set
+  afterwards, and what a CR refuses to carry, how to revise it and how to read it back before the
+  merge are in `kb/servers/change-requests.md`.
 - A conversion also has to finish the **original** page — strip its prose, wire its "Documentation"
   button, delete its attachments, triage its backlinks. That is `kb/conventions/documentation-migration.md`
   and the `xwiki-doc-convert` skill; these tools do not do it for you.
